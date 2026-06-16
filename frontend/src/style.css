@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@plugin "flowbite/plugin";
+@custom-variant dark (&:where(.dark, .dark *));
+@source "../node_modules/flowbite-svelte/dist";
+@source "../node_modules/flowbite-svelte-icons/dist";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: #cccccc;
+  background: #1e1e1e;
+}
+
+#app {
+  height: 100%;
+}
+
+.app-layout {
+  display: flex;
+  height: 100%;
+}
+
+.sidebar {
+  /* 幅は App.svelte がインライン style で指定（スプリッターでリサイズ） */
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #252526;
+  overflow-y: auto;
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #1e1e1e;
+}

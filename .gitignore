@@ -1,0 +1,9 @@
+build/bin
+node_modules
+frontend/dist
+
+# 証明書・秘密鍵（公開しない。ローカル保持のみ）
+certs/
+
+# 旧履歴の退避先（鍵を含む。絶対に追跡しない）
+.git.bak/
