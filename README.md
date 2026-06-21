@@ -1,16 +1,75 @@
-# README
+# Sirusita
 
-## About
+マークダウンで書ける、シンプルなデスクトップメモアプリです。
+メモは YAML front matter 付きのマークダウンファイルとしてローカルに保存され、
+タグでの分類・全文検索・プレビュー表示に対応しています。
 
-This is the official Wails Svelte template.
+## 主な機能
 
-## Live Development
+- **マークダウン編集とプレビュー** — 編集タブとプレビュータブを切り替え。プレビューは文字サイズを可変。
+- **タグ管理** — メモにタグを付与し、サイドバーのタグフィルタで絞り込み。
+- **全文検索** — タイトル・本文を対象に検索。
+- **インポート / エクスポート**
+  - エクスポート: 開いているメモを H1 見出し付きのマークダウンとして保存。
+  - インポート: マークダウンファイル（複数選択可）を取り込み。タイトルは
+    front matter → 先頭の H1 見出し → ファイル名 の優先順で決定。
+- **サイドバー幅・プレビュー文字サイズの記憶** — `localStorage` に保持。
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+## データの保存場所
 
-## Building
+メモは次のディレクトリに `{UUID}.md` として保存されます。
 
-To build a redistributable, production mode package, use `wails build`.
+```
+~/.sirusita/notes/{UUID}.md
+```
+
+ファイル形式（YAML front matter + マークダウン本文）:
+
+```markdown
+---
+title: "メモのタイトル"
+tags:
+  - "タグ1"
+  - "タグ2"
+created: 2026-06-13T10:00:00+09:00
+modified: 2026-06-13T12:00:00+09:00
+---
+
+本文（マークダウン）
+```
+
+## 技術スタック
+
+- **バックエンド:** Go 1.23 + [Wails](https://wails.io) v2.12
+- **フロントエンド:** Svelte 5（runes）+ Vite 7
+- **UI:** Flowbite Svelte + TailwindCSS 4
+- ライセンス: MIT
+
+## ダウンロード（Windows）
+
+ビルド済みの Windows 向け実行ファイルは GitHub Releases から入手できます。
+
+- 最新リリース: https://github.com/morststs/sirusita/releases/latest
+
+`v*` タグ（例: `v1.0.0`）を push すると GitHub Actions が Windows 用 exe を
+ビルドし、Release に `sirusita.exe` を自動添付します。
+
+## 開発（Podman でコンテナ内完結）
+
+ホストに Go / Node / Wails を入れず、すべてのビルド・テストをコンテナ内で行います。
+詳細な手順とコマンドは [`CLAUDE.md`](./CLAUDE.md) と
+[`.devcontainer/README.md`](./.devcontainer/README.md) を参照してください。
+
+```bash
+# 開発用イメージをビルド
+podman build -t wails-dev .
+
+# Windows 用 exe をビルド（出力: build/bin/sirusita.exe）
+podman run --rm -v "$PWD":/app:Z -w /app wails-dev \
+    wails build -platform windows/amd64
+```
+
+## ライセンス
+
+MIT License（著作権者: morststs）。詳細は [`LICENSE`](./LICENSE) を参照。
+サードパーティライセンスは [`THIRD_PARTY_LICENSES.md`](./THIRD_PARTY_LICENSES.md) を参照してください。
