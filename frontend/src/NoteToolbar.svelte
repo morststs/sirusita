@@ -1,8 +1,8 @@
 <script>
   import { Button, Tooltip } from 'flowbite-svelte';
-  import { TrashBinOutline } from 'flowbite-svelte-icons';
+  import { TrashBinOutline, DownloadOutline } from 'flowbite-svelte-icons';
 
-  let { note, onUpdate, onDelete } = $props();
+  let { note, onUpdate, onDelete, onExport } = $props();
 
   let title = $state('');
   let tagsInput = $state('');
@@ -43,6 +43,10 @@
       placeholder="タグ (カンマ区切り)"
       bind:value={tagsInput}
       onblur={handleTagsChange} />
+    <Button color="alternative" size="sm" class="export-btn !p-2" onclick={() => onExport?.()} aria-label="エクスポート">
+      <DownloadOutline class="h-5 w-5" />
+    </Button>
+    <Tooltip>ファイルとしてエクスポート</Tooltip>
     <Button color="red" size="sm" class="delete-btn !p-2" onclick={() => onDelete?.()} aria-label="削除">
       <TrashBinOutline class="h-5 w-5" />
     </Button>

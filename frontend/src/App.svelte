@@ -5,6 +5,7 @@
   import Editor from './Editor.svelte';
   import Preview from './Preview.svelte';
   import { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags } from '../wailsjs/go/main/NoteService';
+  import { ExportNote, ImportNote } from '../wailsjs/go/main/App';
 
   let notes = $state([]);
   let tags = $state([]);
@@ -108,6 +109,20 @@
     }
   }
 
+  async function handleImport() {
+    try {
+      const imported = await ImportNote();
+      if (imported && imported.length > 0) {
+        await refreshList();
+        selectedNote = imported[imported.length - 1];
+        activeTab = 'edit';
+        showToast(imported.length + '件のマークダウンをインポートしました');
+      }
+    } catch (err) {
+      showToast('インポートに失敗しました');
+    }
+  }
+
   async function handleBodyChange(body) {
     if (!selectedNote) return;
     selectedNote.body = body;
@@ -148,6 +163,18 @@
     }
   }
 
+  async function handleExport() {
+    if (!selectedNote) return;
+    try {
+      const path = await ExportNote(selectedNote.title || '', selectedNote.body || '');
+      if (path) {
+        showToast('エクスポートしました: ' + path);
+      }
+    } catch (err) {
+      showToast('エクスポートに失敗しました');
+    }
+  }
+
   async function handleDelete() {
     if (!selectedNote) return;
     try {
@@ -165,13 +192,15 @@
     <Sidebar {notes} {tags} {selectedTag} {selectedNote}
       onSelectNote={handleSelectNote}
       onSelectTag={handleSelectTag}
-      onCreateNote={handleCreateNote} />
+      onCreateNote={handleCreateNote}
+      onImport={handleImport} />
   </div>
   <div class="splitter" class:active={dragging} onmousedown={startDrag} title="ドラッグで幅を調整"></div>
   <div class="main-area">
     {#if selectedNote}
       <NoteToolbar note={selectedNote}
         onUpdate={handleToolbarUpdate}
+        onExport={handleExport}
         onDelete={handleDelete} />
       <div class="tab-bar">
         <button class:active={activeTab === 'edit'} onclick={() => activeTab = 'edit'}>編集</button>

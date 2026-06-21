@@ -7,6 +7,7 @@
     selectedTag = null,
     selectedNote = null,
     onCreateNote,
+    onImport,
     onSelectTag,
     onSelectNote
   } = $props();
@@ -19,13 +20,22 @@
 </script>
 
 <div class="sidebar-content">
-  <button class="new-note-btn" onclick={() => onCreateNote?.()} title="新規マークダウン">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 2h8l4 4v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-      <path d="M12 2v4h4" stroke="currentColor" stroke-width="1.5" fill="none"/>
-      <path d="M10 10v6M7 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-  </button>
+  <div class="sidebar-actions">
+    <button class="new-note-btn" onclick={() => onCreateNote?.()} title="新規マークダウン">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2h8l4 4v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M12 2v4h4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M10 10v6M7 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <button class="import-btn" onclick={() => onImport?.()} title="マークダウンをインポート">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 3v9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3 15v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
 
   <Accordion multiple flush class="accordion-menu">
     <AccordionItem open>
@@ -68,22 +78,36 @@
   .sidebar-content {
     padding: 12px;
   }
-  .new-note-btn {
+  .sidebar-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .new-note-btn, .import-btn {
     width: 36px;
     height: 36px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0e639c;
     color: #ffffff;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    margin-bottom: 16px;
+  }
+  .new-note-btn {
+    background: #0e639c;
   }
   .new-note-btn:hover {
     background: #1177bb;
+  }
+  .import-btn {
+    background: #3c3c3c;
+    color: #cccccc;
+  }
+  .import-btn:hover {
+    background: #4a4a4a;
+    color: #ffffff;
   }
   .tag-list, .note-list {
     padding: 4px 0;
