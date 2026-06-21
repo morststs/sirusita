@@ -61,13 +61,15 @@
     background: #252526;
   }
   .title-input {
+    box-sizing: border-box;
     width: 100%;
     font-size: 20px;
+    line-height: 1.5;
     font-weight: bold;
     font-family: "Noto Sans JP", sans-serif;
     border: none;
     outline: none;
-    padding: 4px 0;
+    padding: 6px 0;
     margin-bottom: 8px;
     background: transparent;
     color: #e7e7e7;
