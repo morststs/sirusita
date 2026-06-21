@@ -1,0 +1,44 @@
+{
+  "name": "sirusita-wails-dev",
+  "build": {
+    "dockerfile": "Containerfile",
+    "context": "..",
+    "args": {
+      "USERNAME": "dev",
+      "USER_UID": "1000",
+      "USER_GID": "1000"
+    }
+  },
+
+  // --- Podman 前提の設定 ---
+  // --userns=keep-id: rootless Podman でホスト UID をコンテナ内ユーザーへ写像し、
+  //   バインドマウントしたファイルの所有権ズレ（従来必要だった chown）を解消する。
+  // label=disable: SELinux 環境（Fedora/RHEL 等）でのマウント relabel 問題を回避。
+  "runArgs": [
+    "--userns=keep-id",
+    "--security-opt", "label=disable"
+  ],
+
+  "containerUser": "dev",
+  "remoteUser": "dev",
+
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+
+  "containerEnv": {
+    // コンテナがサンドボックスであることを Claude Code に明示する
+    "IS_SANDBOX": "1"
+  },
+
+  // 生成直後の健全性チェック（失敗しても継続）
+  "postCreateCommand": "wails doctor || true",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "svelte.svelte-vscode",
+        "golang.go"
+      ]
+    }
+  }
+}

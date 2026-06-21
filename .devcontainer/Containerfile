@@ -1,0 +1,58 @@
+# Sirusita 開発用 devcontainer（Podman 前提・コンテナ内で完結）
+#
+# Go / Node / Wails のビルドツールチェーンと Claude Code CLI を 1 イメージに同梱する。
+# Windows クロスビルドまでコンテナ内で完結し、ホストの Docker/Podman ソケットや
+# ネストした daemon には一切依存しない（docker-out-of-docker / dind を使わない）。
+FROM docker.io/library/golang:1.23-bookworm
+
+# --- Wails / ビルドに必要なシステム依存 ---
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    gnupg \
+    sudo \
+    libgtk-3-dev \
+    libwebkit2gtk-4.0-dev \
+    libwebkit2gtk-4.1-dev \
+    build-essential \
+    pkg-config \
+    gcc-mingw-w64-x86-64 \
+    nsis \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Node.js 22 LTS（Svelte 5 / Vite 7 は Node 20.19+ / 22.12+ を要求）---
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/* \
+    && node -v && npm -v
+
+# --- Wails CLI（go.mod の v2.12.0 に合わせて固定。/go/bin は全ユーザーから利用可）---
+RUN go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
+
+# --- Claude Code CLI（システム /usr/local に導入。全ユーザーから実行可）---
+RUN npm install -g @anthropic-ai/claude-code
+
+# --- 非 root 開発ユーザー ---
+# Claude Code の --dangerously-skip-permissions は root 実行時に拒否される。
+# コンテナ自体をサンドボックスとし、非 root ユーザーで安全に利用する。
+# ホスト UID が 1000 以外の場合は --build-arg USER_UID=$(id -u) USER_GID=$(id -g) で上書きする。
+ARG USERNAME=dev
+ARG USER_UID=1000
+ARG USER_GID=1000
+RUN groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /bin/bash ${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
+
+# dev ユーザー専用の Go 環境（書き込み可能なモジュール/ビルドキャッシュ）。
+# wails 本体は /go/bin（root の GOPATH）に在り、PATH 経由で共有する。
+ENV GOPATH=/home/${USERNAME}/go
+ENV GOCACHE=/home/${USERNAME}/.cache/go-build
+ENV PATH=/go/bin:/home/${USERNAME}/go/bin:/usr/local/bin:${PATH}
+RUN mkdir -p /home/${USERNAME}/go /home/${USERNAME}/.cache /home/${USERNAME}/.claude \
+    && chown -R ${USER_UID}:${USER_GID} /home/${USERNAME}
+
+USER ${USERNAME}
+WORKDIR /workspace
+CMD ["bash"]
