@@ -30,7 +30,11 @@ func main() {
 			Assets: assets,
 		},
 		BackgroundColour: &options.RGBA{R: 30, G: 30, B: 30, A: 1},
-		OnStartup:        app.startup,
+		// マークダウンファイルのドラッグ&ドロップ取り込みを有効化する
+		DragAndDrop: &options.DragAndDrop{
+			EnableFileDrop: true,
+		},
+		OnStartup: app.startup,
 		Bind: []interface{}{
 			app,
 			app.NoteService,

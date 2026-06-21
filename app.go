@@ -87,7 +87,27 @@ func (a *App) ImportNote() ([]Note, error) {
 		// ユーザーがキャンセルした
 		return nil, nil
 	}
+	return a.importPaths(paths)
+}
 
+// ImportFiles は与えられたパスのマークダウンファイルを取り込む（ドラッグ&ドロップ用）。
+// .md / .markdown 以外のパスは無視する。戻り値は作成されたメモの一覧。
+func (a *App) ImportFiles(paths []string) ([]Note, error) {
+	md := make([]string, 0, len(paths))
+	for _, p := range paths {
+		switch strings.ToLower(filepath.Ext(p)) {
+		case ".md", ".markdown":
+			md = append(md, p)
+		}
+	}
+	if len(md) == 0 {
+		return nil, nil
+	}
+	return a.importPaths(md)
+}
+
+// importPaths は各パスを解析して新規メモを作成する共通処理。
+func (a *App) importPaths(paths []string) ([]Note, error) {
 	created := make([]Note, 0, len(paths))
 	for _, path := range paths {
 		data, err := os.ReadFile(path)

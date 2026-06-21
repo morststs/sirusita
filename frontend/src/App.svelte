@@ -5,7 +5,8 @@
   import Editor from './Editor.svelte';
   import Preview from './Preview.svelte';
   import { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags } from '../wailsjs/go/main/NoteService';
-  import { ExportNote, ImportNote } from '../wailsjs/go/main/App';
+  import { ExportNote, ImportNote, ImportFiles } from '../wailsjs/go/main/App';
+  import { OnFileDrop, OnFileDropOff } from '../wailsjs/runtime/runtime';
 
   let notes = $state([]);
   let tags = $state([]);
@@ -37,13 +38,35 @@
       previewFontSize = Math.min(FONT_MAX, Math.max(FONT_MIN, savedFont));
     }
     await refreshList();
+
+    // マークダウンファイルをウィンドウへドラッグ&ドロップで取り込む
+    // （第2引数 false でウィンドウ全体をドロップ対象にする）
+    OnFileDrop((x, y, paths) => { handleFileDrop(paths); }, false);
   });
 
   onDestroy(() => {
     clearTimeout(toastTimer);
     clearTimeout(saveTimer);
     stopDrag();
+    OnFileDropOff();
   });
+
+  async function handleFileDrop(paths) {
+    if (!paths || paths.length === 0) return;
+    try {
+      const imported = await ImportFiles(paths);
+      if (imported && imported.length > 0) {
+        await refreshList();
+        selectedNote = imported[imported.length - 1];
+        activeTab = 'edit';
+        showToast(imported.length + '件のマークダウンをインポートしました');
+      } else {
+        showToast('マークダウンファイル (.md) が見つかりませんでした');
+      }
+    } catch (err) {
+      showToast('インポートに失敗しました');
+    }
+  }
 
   function startDrag(e) {
     dragging = true;
