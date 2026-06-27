@@ -10,8 +10,8 @@ Wails v2 + Svelte 5 で構築されたマークダウンベースのメモアプ
 - **バックエンド:** Go 1.23 + Wails v2.12
 - **フロントエンド:** Svelte 5（runes）+ Vite 7
 - **UIフレームワーク:** Flowbite Svelte 1.x + TailwindCSS 4（`@tailwindcss/vite`）
-- **Go依存:** `github.com/adrg/frontmatter`, `github.com/google/uuid`
-- **JS依存:** `marked`, `dompurify`, `flowbite-svelte`, `flowbite-svelte-icons`
+- **Go依存:** `github.com/adrg/frontmatter`, `github.com/google/uuid`, `oss.terrastruct.com/d2`(D2図のSVG描画)
+- **JS依存:** `marked`, `marked-katex-extension`, `katex`(数式), `mermaid`(図), `dompurify`, `flowbite-svelte`, `flowbite-svelte-icons`
 
 ## 開発環境
 
@@ -69,6 +69,7 @@ podman run --rm -v "$PWD":/app:Z -w /app/frontend wails-dev npm install <package
 sirusita/
 ├── main.go                  # Wails エントリポイント、NoteService 初期化
 ├── app.go                   # App 構造体（ライフサイクル + Import/Export/OpenURL）
+├── d2_render.go             # D2 ソース → SVG 変換（RenderD2、Go ネイティブ）
 ├── note_service.go          # メモ CRUD ロジック
 ├── Dockerfile               # ビルド用イメージ（Podman でビルド）
 ├── wails.json               # Wails 設定（outputfilename: sirusita）
@@ -84,11 +85,13 @@ sirusita/
 │   ├── src/
 │   │   ├── main.js          # Svelte マウント
 │   │   ├── style.css        # グローバルスタイル
-│   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export）
+│   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式）+ 見出し抽出ユーティリティ
+│   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期）
 │   │   ├── Sidebar.svelte   # 新規/インポートボタン + タグフィルタ + メモ一覧
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン
-│   │   ├── Editor.svelte    # マークダウンテキストエディタ
-│   │   └── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変）
+│   │   ├── Editor.svelte    # マークダウンテキストエディタ（スクロール位置を親へ通知）
+│   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画）
+│   │   └── Toc.svelte       # 見出し一覧パネル（クリックでプレビューの該当箇所へジャンプ）
 │   └── wailsjs/             # Wails 自動生成バインディング（編集不可・ビルド時に再生成）
 ├── build/bin/               # ビルド出力先（sirusita / sirusita.exe）
 ├── LICENSE                  # MIT
@@ -104,6 +107,7 @@ sirusita/
 | `ExportNote(title, body)` | 開いているメモを H1 見出し付きマークダウンとして保存（保存ダイアログ） |
 | `ImportNote()` | マークダウンを取り込み（複数選択可）。front matter→H1→ファイル名 でタイトル決定 |
 | `OpenURL(url)` | OS 既定のブラウザで URL を開く |
+| `RenderD2(source)` | D2 ソースを SVG へ変換（`d2_render.go`・完全オフライン・panic は recover でエラー化） |
 
 ### NoteService（note_service.go）
 

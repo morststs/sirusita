@@ -9,3 +9,5 @@ export function ImportFiles(arg1:Array<string>):Promise<Array<main.Note>>;
 export function ImportNote():Promise<Array<main.Note>>;
 
 export function OpenURL(arg1:string):Promise<void>;
+
+export function RenderD2(arg1:string):Promise<string>;

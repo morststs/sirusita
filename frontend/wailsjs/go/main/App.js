@@ -17,3 +17,7 @@ export function ImportNote() {
 export function OpenURL(arg1) {
   return window['go']['main']['App']['OpenURL'](arg1);
 }
+
+export function RenderD2(arg1) {
+  return window['go']['main']['App']['RenderD2'](arg1);
+}

@@ -4,6 +4,8 @@
   import NoteToolbar from './NoteToolbar.svelte';
   import Editor from './Editor.svelte';
   import Preview from './Preview.svelte';
+  import Toc from './Toc.svelte';
+  import { extractHeadings } from './markdown.js';
   import { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags } from '../wailsjs/go/main/NoteService';
   import { ExportNote, ImportNote, ImportFiles } from '../wailsjs/go/main/App';
   import { OnFileDrop, OnFileDropOff } from '../wailsjs/runtime/runtime';
@@ -13,6 +15,16 @@
   let selectedNote = $state(null);
   let selectedTag = $state(null);
   let activeTab = $state('edit');
+  // 編集⇄プレビュー間で共有するスクロール割合（0..1）。
+  let scrollRatio = $state(0);
+  // TOC から見出しがクリックされたときのジャンプ先 id（プレビューが消費したら null に戻す）。
+  let pendingHeadingId = $state(null);
+  // 見出し一覧パネルの表示状態。
+  let showToc = $state(false);
+  // 削除確認ダイアログの表示状態。
+  let showDeleteConfirm = $state(false);
+  // 本文から抽出した見出し一覧（編集に追従してリアルタイム更新）。
+  let headings = $derived(extractHeadings(selectedNote?.body || ''));
   let toastMessage = $state('');
   let toastTimer = null;
   let saveTimer = null;
@@ -37,6 +49,7 @@
     if (!isNaN(savedFont)) {
       previewFontSize = Math.min(FONT_MAX, Math.max(FONT_MIN, savedFont));
     }
+    showToc = localStorage.getItem('showToc') === '1';
     await refreshList();
 
     // マークダウンファイルをウィンドウへドラッグ&ドロップで取り込む
@@ -91,6 +104,27 @@
     previewFontSize = Math.min(FONT_MAX, Math.max(FONT_MIN, previewFontSize + delta));
     localStorage.setItem('previewFontSize', String(previewFontSize));
   }
+
+  function toggleToc() {
+    showToc = !showToc;
+    localStorage.setItem('showToc', showToc ? '1' : '0');
+  }
+
+  // 見出しクリック: プレビューへ切り替え、その見出しまでスクロールさせる。
+  function handleSelectHeading(id) {
+    activeTab = 'preview';
+    pendingHeadingId = id;
+  }
+
+  // 別のメモを開いたらスクロール位置をリセットする（先頭から表示）。
+  let lastNoteId = null;
+  $effect(() => {
+    const id = selectedNote?.id ?? null;
+    if (id !== lastNoteId) {
+      lastNoteId = id;
+      scrollRatio = 0;
+    }
+  });
 
   async function refreshList() {
     try {
@@ -198,7 +232,18 @@
     }
   }
 
-  async function handleDelete() {
+  // 削除ボタン: まず確認ダイアログを開く（実削除は confirmDelete）。
+  function handleDelete() {
+    if (!selectedNote) return;
+    showDeleteConfirm = true;
+  }
+
+  function cancelDelete() {
+    showDeleteConfirm = false;
+  }
+
+  async function confirmDelete() {
+    showDeleteConfirm = false;
     if (!selectedNote) return;
     try {
       await DeleteNote(selectedNote.id);
@@ -228,19 +273,35 @@
       <div class="tab-bar">
         <button class:active={activeTab === 'edit'} onclick={() => activeTab = 'edit'}>編集</button>
         <button class:active={activeTab === 'preview'} onclick={() => activeTab = 'preview'}>プレビュー</button>
-        {#if activeTab === 'preview'}
-          <div class="font-controls">
-            <button class="font-btn" onclick={() => changeFontSize(-1)} disabled={previewFontSize <= FONT_MIN} title="文字を小さく">A-</button>
-            <span class="font-size-label">{previewFontSize}px</span>
-            <button class="font-btn" onclick={() => changeFontSize(1)} disabled={previewFontSize >= FONT_MAX} title="文字を大きく">A+</button>
-          </div>
-        {/if}
+        <div class="tab-controls">
+          {#if activeTab === 'preview'}
+            <div class="font-controls">
+              <button class="font-btn" onclick={() => changeFontSize(-1)} disabled={previewFontSize <= FONT_MIN} title="文字を小さく">A-</button>
+              <span class="font-size-label">{previewFontSize}px</span>
+              <button class="font-btn" onclick={() => changeFontSize(1)} disabled={previewFontSize >= FONT_MAX} title="文字を大きく">A+</button>
+            </div>
+          {/if}
+          <button class="toc-btn" class:active={showToc} onclick={toggleToc} title="見出し一覧">☰ 見出し</button>
+        </div>
       </div>
-      <div class="editor-area">
-        {#if activeTab === 'edit'}
-          <Editor body={selectedNote.body} onChange={handleBodyChange} />
-        {:else}
-          <Preview body={selectedNote.body} fontSize={previewFontSize} />
+      <div class="content-row">
+        <div class="editor-area">
+          {#if activeTab === 'edit'}
+            <Editor body={selectedNote.body} onChange={handleBodyChange}
+              initialRatio={scrollRatio}
+              onScroll={(r) => scrollRatio = r} />
+          {:else}
+            <Preview body={selectedNote.body} fontSize={previewFontSize}
+              initialRatio={scrollRatio}
+              {pendingHeadingId}
+              onScroll={(r) => scrollRatio = r}
+              onConsumePending={() => pendingHeadingId = null} />
+          {/if}
+        </div>
+        {#if showToc}
+          <div class="toc-panel">
+            <Toc {headings} onSelect={handleSelectHeading} />
+          </div>
         {/if}
       </div>
     {:else}
@@ -248,6 +309,22 @@
     {/if}
   </div>
 </div>
+
+{#if showDeleteConfirm && selectedNote}
+  <div class="modal-overlay" onclick={cancelDelete}>
+    <div class="modal" onclick={(e) => e.stopPropagation()}>
+      <div class="modal-title">削除の確認</div>
+      <div class="modal-body">
+        「{selectedNote.title || '無題'}」を削除します。<br />
+        この操作は元に戻せません。よろしいですか？
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick={cancelDelete}>キャンセル</button>
+        <button class="modal-btn danger" onclick={confirmDelete}>削除する</button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 {#if toastMessage}
   <div class="toast">{toastMessage}</div>
@@ -292,11 +369,35 @@
     border-bottom-color: #007acc;
     color: #ffffff;
   }
-  .font-controls {
+  .tab-controls {
     margin-left: auto;
     display: flex;
     align-items: center;
+    gap: 12px;
+  }
+  .font-controls {
+    display: flex;
+    align-items: center;
     gap: 6px;
+  }
+  .toc-btn {
+    padding: 4px 10px;
+    border: 1px solid #3c3c3c;
+    border-radius: 4px;
+    background: #2d2d2d;
+    color: #cccccc;
+    cursor: pointer;
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 13px;
+  }
+  .toc-btn:hover {
+    border-color: #007acc;
+    color: #ffffff;
+  }
+  .toc-btn.active {
+    border-color: #007acc;
+    background: #094771;
+    color: #ffffff;
   }
   .font-btn {
     padding: 2px 8px;
@@ -321,10 +422,21 @@
     min-width: 34px;
     text-align: center;
   }
+  .content-row {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+  }
   .editor-area {
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
+    min-width: 0;
     background: #1e1e1e;
+  }
+  .toc-panel {
+    width: 240px;
+    flex-shrink: 0;
+    overflow: hidden;
   }
   .empty-state {
     display: flex;
@@ -343,5 +455,68 @@
     padding: 12px 20px;
     border-radius: 6px;
     z-index: 1000;
+  }
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+  }
+  .modal {
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    background: #252526;
+    border: 1px solid #3c3c3c;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+  .modal-title {
+    padding: 14px 18px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #e7e7e7;
+    border-bottom: 1px solid #3c3c3c;
+  }
+  .modal-body {
+    padding: 18px;
+    color: #cccccc;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid #3c3c3c;
+  }
+  .modal-btn {
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: 1px solid #3c3c3c;
+    cursor: pointer;
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 13px;
+  }
+  .modal-btn.cancel {
+    background: #2d2d2d;
+    color: #cccccc;
+  }
+  .modal-btn.cancel:hover {
+    background: #3a3a3a;
+    color: #ffffff;
+  }
+  .modal-btn.danger {
+    background: #a1260d;
+    border-color: #a1260d;
+    color: #ffffff;
+  }
+  .modal-btn.danger:hover {
+    background: #c4341a;
+    border-color: #c4341a;
   }
 </style>

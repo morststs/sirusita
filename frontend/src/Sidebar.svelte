@@ -12,10 +12,15 @@
     onSelectNote
   } = $props();
 
+  // 「タグ無し」フィルタ用のセンチネル（実在タグ文字列と衝突しない Symbol）。
+  const UNTAGGED = Symbol('untagged');
+
   let filteredNotes = $derived(
-    selectedTag
-      ? notes.filter(n => n.tags && n.tags.includes(selectedTag))
-      : notes
+    selectedTag === null
+      ? notes
+      : selectedTag === UNTAGGED
+        ? notes.filter(n => !n.tags || n.tags.length === 0)
+        : notes.filter(n => n.tags && n.tags.includes(selectedTag))
   );
 </script>
 
@@ -46,6 +51,12 @@
           class:active={selectedTag === null}
           onclick={() => onSelectTag?.(null)}>
           全て
+        </button>
+        <button
+          class="tag-item"
+          class:active={selectedTag === UNTAGGED}
+          onclick={() => onSelectTag?.(UNTAGGED)}>
+          タグ無し
         </button>
         {#each tags as tag}
           <button

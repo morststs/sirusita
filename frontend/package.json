@@ -20,6 +20,9 @@
     "dompurify": "^3.4.10",
     "flowbite-svelte": "^1.33.1",
     "flowbite-svelte-icons": "^3.1.0",
-    "marked": "^18.0.5"
+    "katex": "^0.17.0",
+    "marked": "^18.0.5",
+    "marked-katex-extension": "^5.1.10",
+    "mermaid": "^11.16.0"
   }
 }
