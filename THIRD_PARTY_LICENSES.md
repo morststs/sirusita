@@ -41,6 +41,7 @@
 | katex | MIT |
 | mermaid | MIT |
 | highlight.js | BSD-3-Clause |
+| monaco-editor | MIT |
 | dompurify | MPL-2.0 OR Apache-2.0 |
 
 ## フォント（Google Fonts CDN 経由で読み込み）

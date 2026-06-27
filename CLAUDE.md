@@ -11,7 +11,7 @@ Wails v2 + Svelte 5 で構築されたマークダウンベースのメモアプ
 - **フロントエンド:** Svelte 5（runes）+ Vite 7
 - **UIフレームワーク:** Flowbite Svelte 1.x + TailwindCSS 4（`@tailwindcss/vite`）
 - **Go依存:** `github.com/adrg/frontmatter`, `github.com/google/uuid`, `oss.terrastruct.com/d2`(D2図のSVG描画)
-- **JS依存:** `marked`, `marked-katex-extension`, `katex`(数式), `mermaid`(図), `marked-highlight`+`highlight.js`(コードハイライト), `dompurify`, `flowbite-svelte`, `flowbite-svelte-icons`
+- **JS依存:** `monaco-editor`(編集), `marked`, `marked-katex-extension`, `katex`(数式), `mermaid`(図), `marked-highlight`+`highlight.js`(コードハイライト), `dompurify`, `flowbite-svelte`, `flowbite-svelte-icons`
 
 ## 開発環境
 
@@ -86,10 +86,11 @@ sirusita/
 │   │   ├── main.js          # Svelte マウント
 │   │   ├── style.css        # グローバルスタイル
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
+│   │   ├── monaco.js        # Monaco Editor のスリム構成（エディタ + Markdown + Worker 設定）
 │   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期）
 │   │   ├── Sidebar.svelte   # 新規/インポートボタン + タグフィルタ + メモ一覧
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン
-│   │   ├── Editor.svelte    # マークダウンテキストエディタ（スクロール位置を親へ通知）
+│   │   ├── Editor.svelte    # Monaco Editor によるマークダウン編集（スクロール位置を親へ通知）
 │   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画）
 │   │   └── Toc.svelte       # 見出し一覧パネル（クリックでプレビューの該当箇所へジャンプ）
 │   └── wailsjs/             # Wails 自動生成バインディング（編集不可・ビルド時に再生成）

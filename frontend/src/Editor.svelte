@@ -1,51 +1,70 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import monaco from './monaco.js';
 
   let { body = '', onChange, initialRatio = 0, onScroll } = $props();
 
-  let textarea;
+  let container;
+  let editor;
+  // 親からの body 反映時に onChange ループを起こさないためのフラグ。
+  let applyingExternal = false;
 
-  function handleInput(e) {
-    onChange?.(e.target.value);
-  }
-
-  // タブ切り替えで再マウントされた直後に、前回のスクロール割合を復元する。
   onMount(() => {
-    const max = textarea.scrollHeight - textarea.clientHeight;
-    if (max > 0) textarea.scrollTop = initialRatio * max;
+    editor = monaco.editor.create(container, {
+      value: body,
+      language: 'markdown',
+      theme: 'vs-dark',
+      automaticLayout: true,
+      wordWrap: 'on',
+      minimap: { enabled: false },
+      fontSize: 14,
+      lineHeight: 22,
+      fontFamily: '"Source Code Pro", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+      lineNumbers: 'on',
+      scrollBeyondLastLine: false,
+      renderWhitespace: 'none',
+      padding: { top: 12, bottom: 12 },
+      tabSize: 2,
+    });
+
+    editor.onDidChangeModelContent(() => {
+      if (applyingExternal) return;
+      onChange?.(editor.getValue());
+    });
+
+    // タブ切り替えで再生成された直後に、前回のスクロール割合を復元する。
+    requestAnimationFrame(() => {
+      const max = editor.getScrollHeight() - editor.getLayoutInfo().height;
+      if (max > 0) editor.setScrollTop(initialRatio * max);
+    });
+
+    editor.onDidScrollChange(() => {
+      const max = editor.getScrollHeight() - editor.getLayoutInfo().height;
+      onScroll?.(max > 0 ? editor.getScrollTop() / max : 0);
+    });
   });
 
-  function handleScroll() {
-    const max = textarea.scrollHeight - textarea.clientHeight;
-    onScroll?.(max > 0 ? textarea.scrollTop / max : 0);
-  }
+  onDestroy(() => {
+    editor?.dispose();
+  });
+
+  // 親が body を差し替えたとき（別メモを開いた等）にエディタへ反映する。
+  // 入力に追従する自己更新ではカーソルが飛ばないよう値が異なる場合のみ setValue する。
+  $effect(() => {
+    const v = body;
+    if (editor && editor.getValue() !== v) {
+      applyingExternal = true;
+      editor.setValue(v);
+      applyingExternal = false;
+    }
+  });
 </script>
 
-<textarea
-  bind:this={textarea}
-  class="editor"
-  value={body}
-  oninput={handleInput}
-  onscroll={handleScroll}
-  placeholder="マークダウンで入力..."></textarea>
+<div class="editor" bind:this={container}></div>
 
 <style>
   .editor {
-    box-sizing: border-box;
-    display: block;
     width: 100%;
     height: 100%;
-    border: none;
-    outline: none;
-    resize: none;
-    padding: 16px;
-    font-family: "Source Code Pro", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    font-size: 14px;
-    line-height: 1.6;
-    background: #1e1e1e;
-    color: #d4d4d4;
-  }
-  .editor::placeholder {
-    color: #6a6a6a;
   }
 </style>

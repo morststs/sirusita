@@ -25,6 +25,7 @@
     "marked": "^18.0.5",
     "marked-highlight": "^2.2.4",
     "marked-katex-extension": "^5.1.10",
-    "mermaid": "^11.16.0"
+    "mermaid": "^11.16.0",
+    "monaco-editor": "^0.55.1"
   }
 }
