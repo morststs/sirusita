@@ -41,9 +41,22 @@ jobs:
         shell: bash
         run: wails build -platform windows/amd64
 
-      - name: Upload exe to Release
+      # exe が大きいため zip 化して添付する。ライセンス表示物（LICENSE /
+      # THIRD_PARTY_LICENSES.md = D2 の MPL-2.0 等）も同梱して配布要件を満たす。
+      - name: Package zip
+        shell: pwsh
+        run: |
+          $staging = "release"
+          New-Item -ItemType Directory -Force -Path $staging | Out-Null
+          Copy-Item build/bin/sirusita.exe $staging/
+          Copy-Item LICENSE $staging/
+          Copy-Item THIRD_PARTY_LICENSES.md $staging/
+          Copy-Item README.md $staging/
+          Compress-Archive -Path "$staging/*" -DestinationPath build/bin/sirusita-windows-amd64.zip -Force
+
+      - name: Upload zip to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          files: build/bin/sirusita.exe
+          files: build/bin/sirusita-windows-amd64.zip
           fail_on_unmatched_files: true
