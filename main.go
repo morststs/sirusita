@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -15,6 +16,18 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// noCacheMiddleware はフロントエンド資産に no-store を付与する。
+// WebView2 が index.html / JS をキャッシュすると、exe を更新しても古い画面が
+// 表示され続ける（実際に発生）。毎回必ず再取得させてこれを防ぐ。
+func noCacheMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	app := NewApp()
 
@@ -27,7 +40,8 @@ func main() {
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
-			Assets: assets,
+			Assets:     assets,
+			Middleware: noCacheMiddleware,
 		},
 		BackgroundColour: &options.RGBA{R: 30, G: 30, B: 30, A: 1},
 		// マークダウンファイルのドラッグ&ドロップ取り込みを有効化する

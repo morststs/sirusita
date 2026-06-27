@@ -14,7 +14,8 @@
   let tags = $state([]);
   let selectedNote = $state(null);
   let selectedTag = $state(null);
-  let activeTab = $state('edit');
+  // 表示モード: 'edit'（編集のみ）/ 'preview'（プレビューのみ）/ 'split'（横に並べて表示）。
+  let view = $state('edit');
   // 編集⇄プレビュー間で共有するスクロール割合（0..1）。
   let scrollRatio = $state(0);
   // TOC から見出しがクリックされたときのジャンプ先 id（プレビューが消費したら null に戻す）。
@@ -50,6 +51,10 @@
       previewFontSize = Math.min(FONT_MAX, Math.max(FONT_MIN, savedFont));
     }
     showToc = localStorage.getItem('showToc') === '1';
+    const savedView = localStorage.getItem('view');
+    if (savedView === 'edit' || savedView === 'preview' || savedView === 'split') {
+      view = savedView;
+    }
     await refreshList();
 
     // マークダウンファイルをウィンドウへドラッグ&ドロップで取り込む
@@ -71,7 +76,7 @@
       if (imported && imported.length > 0) {
         await refreshList();
         selectedNote = imported[imported.length - 1];
-        activeTab = 'edit';
+        navView('edit');
         showToast(imported.length + '件のマークダウンをインポートしました');
       } else {
         showToast('マークダウンファイル (.md) が見つかりませんでした');
@@ -110,9 +115,21 @@
     localStorage.setItem('showToc', showToc ? '1' : '0');
   }
 
-  // 見出しクリック: プレビューへ切り替え、その見出しまでスクロールさせる。
+  // 表示モードを切り替えて保存する（タブのクリックから呼ばれる）。
+  function setView(v) {
+    view = v;
+    localStorage.setItem('view', v);
+  }
+
+  // ノート操作に伴う自動切り替え。分割表示中はそのまま維持する。
+  function navView(v) {
+    if (view !== 'split') setView(v);
+  }
+
+  // 見出しクリック: プレビューを表示し、その見出しまでスクロールさせる。
+  // 編集のみ表示中ならプレビューへ切り替える（プレビュー/分割では既に表示中）。
   function handleSelectHeading(id) {
-    activeTab = 'preview';
+    if (view === 'edit') setView('preview');
     pendingHeadingId = id;
   }
 
@@ -144,7 +161,7 @@
   async function handleSelectNote(id) {
     try {
       selectedNote = await GetNote(id);
-      activeTab = 'preview';
+      navView('preview');
     } catch (err) {
       showToast('マークダウンの読み込みに失敗しました');
       await refreshList();
@@ -160,7 +177,7 @@
       const note = await CreateNote('無題', '', []);
       await refreshList();
       selectedNote = note;
-      activeTab = 'edit';
+      navView('edit');
     } catch (err) {
       showToast('マークダウンの作成に失敗しました');
     }
@@ -172,7 +189,7 @@
       if (imported && imported.length > 0) {
         await refreshList();
         selectedNote = imported[imported.length - 1];
-        activeTab = 'edit';
+        navView('edit');
         showToast(imported.length + '件のマークダウンをインポートしました');
       }
     } catch (err) {
@@ -270,11 +287,25 @@
         onUpdate={handleToolbarUpdate}
         onExport={handleExport}
         onDelete={handleDelete} />
+      {#snippet editorPane()}
+        <Editor body={selectedNote.body} onChange={handleBodyChange}
+          initialRatio={scrollRatio}
+          onScroll={(r) => scrollRatio = r} />
+      {/snippet}
+      {#snippet previewPane()}
+        <Preview body={selectedNote.body} fontSize={previewFontSize}
+          initialRatio={scrollRatio}
+          {pendingHeadingId}
+          onScroll={(r) => scrollRatio = r}
+          onConsumePending={() => pendingHeadingId = null} />
+      {/snippet}
+
       <div class="tab-bar">
-        <button class:active={activeTab === 'edit'} onclick={() => activeTab = 'edit'}>編集</button>
-        <button class:active={activeTab === 'preview'} onclick={() => activeTab = 'preview'}>プレビュー</button>
+        <button class:active={view === 'edit'} onclick={() => setView('edit')}>編集</button>
+        <button class:active={view === 'preview'} onclick={() => setView('preview')}>プレビュー</button>
+        <button class:active={view === 'split'} onclick={() => setView('split')} title="編集とプレビューを横に並べる">分割</button>
         <div class="tab-controls">
-          {#if activeTab === 'preview'}
+          {#if view === 'split' || view === 'preview'}
             <div class="font-controls">
               <button class="font-btn" onclick={() => changeFontSize(-1)} disabled={previewFontSize <= FONT_MIN} title="文字を小さく">A-</button>
               <span class="font-size-label">{previewFontSize}px</span>
@@ -285,19 +316,15 @@
         </div>
       </div>
       <div class="content-row">
-        <div class="editor-area">
-          {#if activeTab === 'edit'}
-            <Editor body={selectedNote.body} onChange={handleBodyChange}
-              initialRatio={scrollRatio}
-              onScroll={(r) => scrollRatio = r} />
-          {:else}
-            <Preview body={selectedNote.body} fontSize={previewFontSize}
-              initialRatio={scrollRatio}
-              {pendingHeadingId}
-              onScroll={(r) => scrollRatio = r}
-              onConsumePending={() => pendingHeadingId = null} />
-          {/if}
-        </div>
+        {#if view === 'split'}
+          <div class="editor-area">{@render editorPane()}</div>
+          <div class="pane-divider"></div>
+          <div class="editor-area">{@render previewPane()}</div>
+        {:else if view === 'edit'}
+          <div class="editor-area">{@render editorPane()}</div>
+        {:else}
+          <div class="editor-area">{@render previewPane()}</div>
+        {/if}
         {#if showToc}
           <div class="toc-panel">
             <Toc {headings} onSelect={handleSelectHeading} />
@@ -432,6 +459,12 @@
     overflow: hidden;
     min-width: 0;
     background: #1e1e1e;
+  }
+  /* 分割表示の編集ペインとプレビューペインの境界線 */
+  .pane-divider {
+    width: 1px;
+    flex-shrink: 0;
+    background: #3c3c3c;
   }
   .toc-panel {
     width: 240px;
