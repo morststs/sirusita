@@ -1,5 +1,7 @@
 import { Marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js/lib/common';
 import DOMPurify from 'dompurify';
 
 // 見出しに連番 ID（heading-0, heading-1, ...）を振る Marked インスタンス。
@@ -23,6 +25,30 @@ md.use(
   markedKatex({
     throwOnError: false,
     output: 'html',
+  }),
+);
+
+// HTML エスケープ（図のソースをそのまま <pre><code> に流すため）。
+function escapeHtml(s) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// シンタックスハイライト（Highlight.js）。コードブロックを言語別に色付けする。
+// mermaid / d2 は Preview 側で図に変換するため、ここではハイライトせず素のまま残す。
+md.use(
+  markedHighlight({
+    emptyLangClass: 'hljs',
+    langPrefix: 'hljs language-',
+    highlight(code, lang) {
+      if (lang === 'mermaid' || lang === 'd2') {
+        return escapeHtml(code);
+      }
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    },
   }),
 );
 

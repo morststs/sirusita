@@ -11,7 +11,7 @@ Wails v2 + Svelte 5 で構築されたマークダウンベースのメモアプ
 - **フロントエンド:** Svelte 5（runes）+ Vite 7
 - **UIフレームワーク:** Flowbite Svelte 1.x + TailwindCSS 4（`@tailwindcss/vite`）
 - **Go依存:** `github.com/adrg/frontmatter`, `github.com/google/uuid`, `oss.terrastruct.com/d2`(D2図のSVG描画)
-- **JS依存:** `marked`, `marked-katex-extension`, `katex`(数式), `mermaid`(図), `dompurify`, `flowbite-svelte`, `flowbite-svelte-icons`
+- **JS依存:** `marked`, `marked-katex-extension`, `katex`(数式), `mermaid`(図), `marked-highlight`+`highlight.js`(コードハイライト), `dompurify`, `flowbite-svelte`, `flowbite-svelte-icons`
 
 ## 開発環境
 
@@ -85,7 +85,7 @@ sirusita/
 │   ├── src/
 │   │   ├── main.js          # Svelte マウント
 │   │   ├── style.css        # グローバルスタイル
-│   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式）+ 見出し抽出ユーティリティ
+│   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
 │   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期）
 │   │   ├── Sidebar.svelte   # 新規/インポートボタン + タグフィルタ + メモ一覧
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン

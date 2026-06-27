@@ -37,8 +37,10 @@
 | flowbite-svelte-icons | MIT |
 | marked | MIT |
 | marked-katex-extension | MIT |
+| marked-highlight | MIT |
 | katex | MIT |
 | mermaid | MIT |
+| highlight.js | BSD-3-Clause |
 | dompurify | MPL-2.0 OR Apache-2.0 |
 
 ## フォント（Google Fonts CDN 経由で読み込み）
