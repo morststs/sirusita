@@ -47,12 +47,22 @@
 
   // 生成された SVG を <pre> と差し替えて表示する。
   // 既定の DOMPurify は SVG を保持しつつ script / on* を除去する。
-  function injectSvg(pre, svg) {
+  // fitNatural=true のとき、viewBox しか持たない SVG（D2）へ自然サイズ(px)を明示し、
+  // コンテナ幅へ引き伸ばされて巨大化するのを防ぐ（CSS の max-width で縮小のみ許可）。
+  function injectSvg(pre, svg, fitNatural = false) {
     const wrapper = document.createElement('div');
     wrapper.className = 'diagram';
     // スクロール同期用の行アンカーを差し替え後の要素へ引き継ぐ。
     if (pre.dataset.sourceLine != null) wrapper.dataset.sourceLine = pre.dataset.sourceLine;
     wrapper.innerHTML = DOMPurify.sanitize(svg);
+    if (fitNatural) {
+      const root = wrapper.querySelector('svg');
+      const vb = root?.getAttribute('viewBox')?.split(/[\s,]+/);
+      if (root && !root.getAttribute('width') && vb?.length === 4) {
+        root.setAttribute('width', vb[2]);
+        root.setAttribute('height', vb[3]);
+      }
+    }
     pre.replaceWith(wrapper);
   }
 
@@ -110,7 +120,7 @@
       const pre = code.parentElement;
       try {
         const svg = await RenderD2(code.textContent || '');
-        injectSvg(pre, svg);
+        injectSvg(pre, svg, true);
       } catch (err) {
         markError(pre, err);
       }
