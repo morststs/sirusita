@@ -66,6 +66,23 @@ export function renderMarkdown(body) {
   return DOMPurify.sanitize(md.parse(body || ''));
 }
 
+// 各トップレベルブロックの開始ソース行（0始まり）を順番に返す。
+// renderMarkdown と同じトークン順なので、レンダリング後のトップレベル要素へ
+// 順番に対応づければ「要素 ↔ ソース行」のアンカーになる（分割スクロール同期用）。
+// 空行（space）/ リンク定義（def）は要素を生成しないので除外する。
+export function topLevelLineStarts(body) {
+  const tokens = md.lexer(body || '');
+  const starts = [];
+  let line = 0;
+  for (const t of tokens) {
+    if (t.type !== 'space' && t.type !== 'def') {
+      starts.push(line);
+    }
+    line += ((t.raw || '').match(/\n/g) || []).length;
+  }
+  return starts;
+}
+
 // 本文から見出し一覧を抽出する。renderMarkdown と同じ順序で番号を振るため、
 // id はプレビュー側の見出し id と一致する。
 export function extractHeadings(body) {

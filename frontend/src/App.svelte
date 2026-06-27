@@ -133,6 +133,18 @@
     pendingHeadingId = id;
   }
 
+  // 分割モードの行アンカー・スクロール同期。
+  // 各ペインは「自分がプログラムで動いたエコー」を内部の抑止フラグで無視するので、
+  // ここでは単純に相手へ行を橋渡しするだけでループしない。
+  let editorRef = $state(null);
+  let previewRef = $state(null);
+  function syncFromEditor(line) {
+    if (view === 'split') previewRef?.scrollToSourceLine(line);
+  }
+  function syncFromPreview(line) {
+    if (view === 'split') editorRef?.scrollToSourceLine(line);
+  }
+
   // 別のメモを開いたらスクロール位置をリセットする（先頭から表示）。
   let lastNoteId = null;
   $effect(() => {
@@ -288,15 +300,17 @@
         onExport={handleExport}
         onDelete={handleDelete} />
       {#snippet editorPane()}
-        <Editor body={selectedNote.body} onChange={handleBodyChange}
+        <Editor bind:this={editorRef} body={selectedNote.body} onChange={handleBodyChange}
           initialRatio={scrollRatio}
-          onScroll={(r) => scrollRatio = r} />
+          onScroll={(r) => scrollRatio = r}
+          onLineScroll={syncFromEditor} />
       {/snippet}
       {#snippet previewPane()}
-        <Preview body={selectedNote.body} fontSize={previewFontSize}
+        <Preview bind:this={previewRef} body={selectedNote.body} fontSize={previewFontSize}
           initialRatio={scrollRatio}
           {pendingHeadingId}
           onScroll={(r) => scrollRatio = r}
+          onLineScroll={syncFromPreview}
           onConsumePending={() => pendingHeadingId = null} />
       {/snippet}
 
