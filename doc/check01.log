@@ -1,4 +1,0 @@
-user01@axelpc:~/samples/dev_sirusita$ docker exec -it claude-dev-dev_sirusita md5sum /workspace/sirusita/build/bin/sirusita.exe
-b2596bcbd31251e79c5e794f64c6d53f  /workspace/sirusita/build/bin/sirusita.exe
-user01@axelpc:~/samples/dev_sirusita$ md5sum sirusita.exe
-b2596bcbd31251e79c5e794f64c6d53f  sirusita.exe
