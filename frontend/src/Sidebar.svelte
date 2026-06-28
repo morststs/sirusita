@@ -33,7 +33,7 @@
         <path d="M10 10v6M7 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
-    <button class="import-btn" onclick={() => onImport?.()} title="マークダウンをインポート">
+    <button class="import-btn" onclick={() => onImport?.()} title="マークダウン / ZIP をインポート">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M10 3v9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

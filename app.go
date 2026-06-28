@@ -1,8 +1,10 @@
 package main
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -74,9 +76,9 @@ func (a *App) ExportNote(title, body string) (string, error) {
 // 解析して新規メモを作成する。戻り値は作成されたメモの一覧（キャンセル時は空）。
 func (a *App) ImportNote() ([]Note, error) {
 	paths, err := wailsruntime.OpenMultipleFilesDialog(a.ctx, wailsruntime.OpenDialogOptions{
-		Title: "マークダウンをインポート",
+		Title: "マークダウン / ZIP をインポート",
 		Filters: []wailsruntime.FileFilter{
-			{DisplayName: "Markdown (*.md;*.markdown)", Pattern: "*.md;*.markdown"},
+			{DisplayName: "Markdown / ZIP (*.md;*.markdown;*.zip)", Pattern: "*.md;*.markdown;*.zip"},
 			{DisplayName: "All Files (*.*)", Pattern: "*.*"},
 		},
 	})
@@ -90,32 +92,40 @@ func (a *App) ImportNote() ([]Note, error) {
 	return a.importPaths(paths)
 }
 
-// ImportFiles は与えられたパスのマークダウンファイルを取り込む（ドラッグ&ドロップ用）。
-// .md / .markdown 以外のパスは無視する。戻り値は作成されたメモの一覧。
+// ImportFiles は与えられたパスのマークダウン / ZIP を取り込む（ドラッグ&ドロップ用）。
+// .md / .markdown / .zip 以外のパスは無視する。戻り値は作成されたメモの一覧。
 func (a *App) ImportFiles(paths []string) ([]Note, error) {
-	md := make([]string, 0, len(paths))
+	accepted := make([]string, 0, len(paths))
 	for _, p := range paths {
 		switch strings.ToLower(filepath.Ext(p)) {
-		case ".md", ".markdown":
-			md = append(md, p)
+		case ".md", ".markdown", ".zip":
+			accepted = append(accepted, p)
 		}
 	}
-	if len(md) == 0 {
+	if len(accepted) == 0 {
 		return nil, nil
 	}
-	return a.importPaths(md)
+	return a.importPaths(accepted)
 }
 
 // importPaths は各パスを解析して新規メモを作成する共通処理。
+// .zip は中の .md / .markdown をまとめて取り込む。
 func (a *App) importPaths(paths []string) ([]Note, error) {
 	created := make([]Note, 0, len(paths))
 	for _, path := range paths {
+		if strings.EqualFold(filepath.Ext(path), ".zip") {
+			notes, err := a.importZip(path)
+			if err != nil {
+				return created, err
+			}
+			created = append(created, notes...)
+			continue
+		}
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return created, err
 		}
-		title, body, tags := parseMarkdownImport(data, path)
-		note, err := a.NoteService.CreateNote(title, body, tags)
+		note, err := a.createFromMarkdown(data, path)
 		if err != nil {
 			return created, err
 		}
@@ -124,41 +134,113 @@ func (a *App) importPaths(paths []string) ([]Note, error) {
 	return created, nil
 }
 
-// parseMarkdownImport は取り込むマークダウンを解析し、タイトル・本文・タグを抽出する。
-// 1) YAML front matter があればそれを優先する。
-// 2) なければ先頭の H1 見出し（# ...）をタイトルとして取り出す。
-// 3) いずれも無ければファイル名（拡張子除く）をタイトルにする。
-func parseMarkdownImport(data []byte, path string) (title, body string, tags []string) {
-	tags = []string{}
+// importZip は ZIP 内の .md / .markdown エントリをまとめて取り込む。
+func (a *App) importZip(path string) ([]Note, error) {
+	r, err := zip.OpenReader(path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
 
-	var meta NoteMeta
-	rest, err := frontmatter.Parse(bytes.NewReader(data), &meta)
+	created := make([]Note, 0, len(r.File))
+	for _, f := range r.File {
+		if f.FileInfo().IsDir() {
+			continue
+		}
+		switch strings.ToLower(filepath.Ext(f.Name)) {
+		case ".md", ".markdown":
+		default:
+			continue
+		}
+		rc, err := f.Open()
+		if err != nil {
+			return created, err
+		}
+		data, err := io.ReadAll(rc)
+		rc.Close()
+		if err != nil {
+			return created, err
+		}
+		note, err := a.createFromMarkdown(data, f.Name)
+		if err != nil {
+			return created, err
+		}
+		created = append(created, note)
+	}
+	return created, nil
+}
+
+// createFromMarkdown はマークダウンを解析してメモを作成する。
+// sirusita 形式なら作成/更新日時もそのまま保持する。
+func (a *App) createFromMarkdown(data []byte, path string) (Note, error) {
+	doc := parseMarkdownImport(data, path)
+	return a.NoteService.CreateImported(doc.title, doc.body, doc.tags, doc.created, doc.modified)
+}
+
+// importedDoc は取り込むマークダウンの解析結果。
+// created / modified は sirusita 形式のときだけ埋まり、それ以外は空文字。
+type importedDoc struct {
+	title    string
+	body     string
+	tags     []string
+	created  string
+	modified string
+}
+
+// importFrontMatter は取り込み時に front matter から読み取るフィールド。
+// sirusita が空でなければ「sirusita 形式」と判定する。
+type importFrontMatter struct {
+	Title    string   `yaml:"title"`
+	Tags     []string `yaml:"tags"`
+	Created  string   `yaml:"created"`
+	Modified string   `yaml:"modified"`
+	Sirusita string   `yaml:"sirusita"`
+}
+
+// parseMarkdownImport は取り込むマークダウンを解析し、タイトル・本文・タグを抽出する。
+//  1. YAML front matter があればそれを優先する。sirusita 形式（front matter に sirusita
+//     フィールドあり）なら作成/更新日時もそのまま保持する。
+//  2. なければ先頭の H1 見出し（# ...）をタイトルとして取り出す。
+//  3. いずれも無ければファイル名（拡張子除く）をタイトルにする。
+func parseMarkdownImport(data []byte, path string) importedDoc {
+	doc := importedDoc{tags: []string{}}
+
+	var fm importFrontMatter
+	rest, err := frontmatter.Parse(bytes.NewReader(data), &fm)
 	// front matter を含む場合は本文部分のみを残す
 	content := string(data)
 	if err == nil {
 		content = string(rest)
-		if strings.TrimSpace(meta.Title) != "" {
-			if meta.Tags != nil {
-				tags = meta.Tags
+		// sirusita 形式なら作成/更新日時を引き継ぐ
+		if strings.TrimSpace(fm.Sirusita) != "" {
+			doc.created = strings.TrimSpace(fm.Created)
+			doc.modified = strings.TrimSpace(fm.Modified)
+		}
+		if strings.TrimSpace(fm.Title) != "" {
+			if fm.Tags != nil {
+				doc.tags = fm.Tags
 			}
-			return meta.Title, strings.TrimSpace(content), tags
+			doc.title = fm.Title
+			doc.body = strings.TrimSpace(content)
+			return doc
 		}
 	}
 
 	content = strings.TrimLeft(content, "\r\n")
 	lines := strings.SplitN(content, "\n", 2)
 	if len(lines) > 0 && strings.HasPrefix(strings.TrimSpace(lines[0]), "# ") {
-		title = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(lines[0]), "# "))
+		doc.title = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(lines[0]), "# "))
 		if len(lines) > 1 {
-			body = strings.TrimSpace(lines[1])
+			doc.body = strings.TrimSpace(lines[1])
 		}
-		return title, body, tags
+		return doc
 	}
 
 	// H1 が無ければファイル名をタイトルにする
 	base := filepath.Base(path)
-	title = strings.TrimSuffix(base, filepath.Ext(base))
-	return title, strings.TrimSpace(content), tags
+	doc.title = strings.TrimSuffix(base, filepath.Ext(base))
+	doc.body = strings.TrimSpace(content)
+	return doc
 }
 
 // sanitizeFilename はタイトルをファイル名に使えるよう不正な文字を除去する。

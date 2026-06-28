@@ -13,6 +13,12 @@ import (
 	"github.com/google/uuid"
 )
 
+// sirusitaFormatVersion は front matter に埋め込む「sirusita 形式」識別子の値。
+// この値が front matter に存在する場合、インポート時にタイトル・タグ・作成/更新日時を
+// そのまま信頼して取り込む（[parseMarkdownImport] 参照）。将来の形式変更に備えて
+// バージョン番号（文字列）にしている。
+const sirusitaFormatVersion = "1"
+
 type NoteMeta struct {
 	ID       string   `json:"id" yaml:"-"`
 	Title    string   `json:"title" yaml:"title"`
@@ -36,9 +42,25 @@ func NewNoteService(notesDir string) *NoteService {
 }
 
 func (s *NoteService) CreateNote(title, body string, tags []string) (Note, error) {
+	return s.CreateImported(title, body, tags, "", "")
+}
+
+// CreateImported は作成/更新日時を指定して新規メモを作成する（インポート用）。
+// created / modified が空文字の場合は現在時刻を使う。sirusita 形式のマークダウンを
+// 取り込むときに、元ファイルの作成/更新日時をそのまま保持するために使用する。
+func (s *NoteService) CreateImported(title, body string, tags []string, created, modified string) (Note, error) {
 	id := uuid.New().String()
 	now := time.Now().Format(time.RFC3339)
-	meta := NoteMeta{ID: id, Title: title, Tags: tags, Created: now, Modified: now}
+	if strings.TrimSpace(created) == "" {
+		created = now
+	}
+	if strings.TrimSpace(modified) == "" {
+		modified = now
+	}
+	if tags == nil {
+		tags = []string{}
+	}
+	meta := NoteMeta{ID: id, Title: title, Tags: tags, Created: created, Modified: modified}
 	note := Note{NoteMeta: meta, Body: body}
 	if err := s.writeNote(note); err != nil {
 		return Note{}, fmt.Errorf("failed to write note: %w", err)
@@ -56,6 +78,7 @@ func (s *NoteService) writeNote(note Note) error {
 	}
 	content += fmt.Sprintf("created: %s\n", note.Created)
 	content += fmt.Sprintf("modified: %s\n", note.Modified)
+	content += fmt.Sprintf("sirusita: %q\n", sirusitaFormatVersion)
 	content += "---\n\n"
 	content += note.Body
 	path := filepath.Join(s.notesDir, note.ID+".md")
