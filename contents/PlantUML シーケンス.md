@@ -1,10 +1,11 @@
 ---
 title: "PlantUML シーケンス"
 tags:
-  - "MD,PlantUML"
-  - "plantuml"
+  - "PlantUML"
+  - "図表"
 created: 2026-06-15T21:31:45+09:00
 modified: 2026-06-16T08:45:33+09:00
+sirusita: "1"
 ---
 
 ## 1. 基本設定と登場人物の定義

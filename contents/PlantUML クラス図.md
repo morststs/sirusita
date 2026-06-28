@@ -1,8 +1,11 @@
 ---
-title: "plantuml クラス図"
-tags: - "MD,PlantUML"
+title: "PlantUML クラス図"
+tags:
+  - "PlantUML"
+  - "図表"
 created: 2026-06-21T17:37:25+09:00
 modified: 2026-06-21T17:37:25+09:00
+sirusita: "1"
 ---
 
 ## 1. 基本構造と定義

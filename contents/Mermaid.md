@@ -1,9 +1,11 @@
 ---
 title: "Mermaid"
 tags:
-  - "MD"
+  - "Markdown"
+  - "図表"
 created: 2026-06-15T21:26:39+09:00
 modified: 2026-06-15T22:22:54+09:00
+sirusita: "1"
 ---
 
 ## 1. 概要・基本ルール

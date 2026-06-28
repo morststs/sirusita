@@ -1,9 +1,10 @@
 ---
 title: "Go基本文法"
 tags:
-  - "Programing"
+  - "プログラミング"
 created: 2026-06-27T22:35:34+09:00
 modified: 2026-06-27T23:14:07+09:00
+sirusita: "1"
 ---
 
 ## Go言語の基本文法
