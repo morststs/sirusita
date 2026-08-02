@@ -3,7 +3,7 @@ title: "Docker コマンド"
 tags:
   - "コマンド"
 created: 2026-06-28T10:00:00+09:00
-modified: 2026-06-28T10:00:00+09:00
+modified: 2026-08-02T10:20:00+09:00
 sirusita: "1"
 ---
 
@@ -173,4 +173,26 @@ volumes:
 # 使用容量を確認してから不要リソースを一掃
 docker system df
 docker system prune -a --volumes
+```
+
+---
+
+## 9. ビルドキャッシュの管理（BuildKit）
+
+BuildKit のビルドキャッシュは `docker system prune` では消えないため、専用コマンドで管理する。全削除ではなく「直近のキャッシュを一定量だけ残す」運用が便利。
+
+* **`docker builder prune`**：未使用のビルドキャッシュを削除（確認プロンプトあり）
+* **`docker builder prune -f`**：確認なしで削除
+* **`docker builder prune --keep-storage 5GiB`**：容量が上限を超えた分だけ、古いキャッシュから削除して 5GiB を残す
+* **`docker builder du`**：ビルドキャッシュの使用容量を表示（Docker Desktop / 一部環境）
+* **`docker buildx prune --keep-storage 5GiB`**：BuildKit ビルダー（buildx）側のキャッシュを 5GiB 残して削除
+* **`docker buildx du`**：buildx のキャッシュ使用量をビルダーごとに表示
+
+```bash
+# ビルドキャッシュを5GiB残して古いものから削除
+docker builder prune --keep-storage 5GiB -f
+
+# buildxを使っている場合はこちら
+docker buildx du
+docker buildx prune --keep-storage 5GiB -f
 ```

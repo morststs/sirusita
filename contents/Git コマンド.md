@@ -3,7 +3,7 @@ title: "Git コマンド"
 tags:
   - "コマンド"
 created: 2026-06-15T21:21:06+09:00
-modified: 2026-06-16T22:33:03+09:00
+modified: 2026-08-02T10:15:00+09:00
 sirusita: "1"
 ---
 
@@ -47,3 +47,40 @@ sirusita: "1"
 * **`git reset --hard <コミットID>`**：指定したコミット時点まで完全に状態を巻き戻す
 * **`git stash`**：作業中の変更を一時的に退避（別ブランチへの切り替え時に重宝）
 * **`git stash pop`**：退避していた変更を現在のブランチに復元
+
+## 7. git switch（ブランチ切り替え専用コマンド）
+
+`git checkout` はブランチ切り替え・ファイル復元など役割が広く事故りやすいため、ブランチ操作だけに絞った `switch` が用意されている。
+
+* **`git switch <ブランチ名>`**：指定したブランチへ切り替え
+* **`git switch -c <ブランチ名>`**：新しいブランチを作成して切り替え
+* **`git switch -c <ブランチ名> <起点>`**：指定コミット/ブランチを起点に新ブランチを作成して切り替え
+* **`git switch -`**：直前にいたブランチへ戻る
+* **`git switch --detach <コミットID>`**：特定コミットを指したまま（ブランチに紐付けず）チェックアウト
+
+```bash
+# mainから作業用ブランチを作って切り替え
+git switch -c feature/login main
+
+# 作業を中断して直前のブランチへ戻る
+git switch -
+```
+
+## 8. git worktree（複数ブランチの同時作業）
+
+同じリポジトリの別ブランチを、別ディレクトリとして同時にチェックアウトできる機能。`git stash` を挟まずに緊急のバグ修正へ切り替えたい時などに便利。
+
+* **`git worktree add <パス> <ブランチ名>`**：指定ブランチを別ディレクトリとしてチェックアウト
+* **`git worktree add -b <新ブランチ名> <パス>`**：新しいブランチを作成しつつ worktree として追加
+* **`git worktree list`**：現在のリポジトリに紐づく worktree の一覧を表示
+* **`git worktree remove <パス>`**：不要になった worktree を削除
+* **`git worktree prune`**：手動でディレクトリごと消してしまった worktree の管理情報を掃除
+
+```bash
+# ../hotfix ディレクトリに新規ブランチ hotfix/urgent を作って作業開始
+git worktree add -b hotfix/urgent ../hotfix main
+
+# 作業が終わったら一覧確認して削除
+git worktree list
+git worktree remove ../hotfix
+```
