@@ -7,7 +7,7 @@ Wails v2 + Svelte 5 で構築されたマークダウンベースのメモアプ
 
 同じ画面をブラウザで動かす **Web 版**（https://sirusita.e17.click/ ・GitHub Pages・メモはブラウザの
 IndexedDB に保存）もある（「Web 版（GitHub Pages）」参照）。**Microsoft Store 版**は準備中
-（提出済み・未公開。「MSIX / Microsoft Store」参照）。
+（準備中・未提出。「MSIX / Microsoft Store」参照）。
 
 ## 技術スタック
 
@@ -215,8 +215,7 @@ script トランスパイルを明示することで取り込めるようにし�
 - 同じワークフローで `contents/*.md` を `sirusita-contents.zip` に固めて **exe とは別の ZIP**
   として Release に添付する。利用者はアプリの「インポート」からこの ZIP をそのまま取り込める。
 - CI のフロントエンドビルドも `frontend/svelte.config.js` に依存しているため、コミット必須。
-
-- `v*` タグの push では release.yml と msix.yml が同時に動く（MSIX は Artifact に置かれるだけ）。
+- `v* タグの push では release.yml と msix.yml が同時に動く（MSIX は Artifact に置かれるだけ）。
 
 ## Web 版（GitHub Pages）
 
@@ -238,7 +237,7 @@ script トランスパイルを明示することで取り込めるようにし�
 - **独自ドメイン:** `sirusita.e17.click`。Route53 のホストゾーン `e17.click` に CNAME `sirusita` → `morststs.github.io`。
   カスタムドメインの設定は GitHub Pages 側（リポジトリの Pages 設定）が正。
 - **外部 CDN を使わない:** Web 版はプライバシー上、閲覧時に第三者へ通信しない方針。
-  そのため Google Fonts は廃止し、フォント等はすべて自前で同梱する。
+  そのため Google Fonts は廃止し、OS のシステムフォントを使う（同梱フォントは KaTeX のもののみ）。
 
 ## MSIX / Microsoft Store
 

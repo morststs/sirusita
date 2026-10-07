@@ -72,6 +72,8 @@ jobs:
 
             **Windows:** `sirusita-windows-amd64.zip` を展開して `sirusita.exe` を実行してください。
             未署名のため、Windows 11 のスマート アプリ コントロールにブロックされることがあります。
+
+            `sirusita-contents.zip` はサンプルメモ集です。アプリの「インポート」からそのまま取り込めます。
           files: |
             build/bin/sirusita-windows-amd64.zip
             build/bin/sirusita-contents.zip
