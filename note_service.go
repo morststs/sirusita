@@ -57,15 +57,40 @@ func (s *NoteService) CreateImported(title, body string, tags []string, created,
 	if strings.TrimSpace(modified) == "" {
 		modified = now
 	}
-	if tags == nil {
-		tags = []string{}
-	}
+	tags = normalizeTags(tags)
 	meta := NoteMeta{ID: id, Title: title, Tags: tags, Created: created, Modified: modified}
 	note := Note{NoteMeta: meta, Body: body}
 	if err := s.writeNote(note); err != nil {
 		return Note{}, fmt.Errorf("failed to write note: %w", err)
 	}
 	return note, nil
+}
+
+// NormalizeTag は階層タグ（"親/子"）を正規化する。
+// "/" で区切った各セグメントの前後空白を除き、空セグメントを捨てて再結合する。
+func NormalizeTag(tag string) string {
+	var segs []string
+	for _, seg := range strings.Split(tag, "/") {
+		if seg = strings.TrimSpace(seg); seg != "" {
+			segs = append(segs, seg)
+		}
+	}
+	return strings.Join(segs, "/")
+}
+
+// normalizeTags は各タグを正規化し、空タグと重複を除く（出現順は保持）。
+func normalizeTags(tags []string) []string {
+	out := []string{}
+	seen := make(map[string]bool)
+	for _, tag := range tags {
+		tag = NormalizeTag(tag)
+		if tag == "" || seen[tag] {
+			continue
+		}
+		seen[tag] = true
+		out = append(out, tag)
+	}
+	return out
 }
 
 func (s *NoteService) writeNote(note Note) error {
@@ -112,9 +137,7 @@ func (s *NoteService) GetNote(id string) (Note, error) {
 		return Note{}, fmt.Errorf("failed to parse front matter: %w", err)
 	}
 	meta.ID = id
-	if meta.Tags == nil {
-		meta.Tags = []string{}
-	}
+	meta.Tags = normalizeTags(meta.Tags)
 	return Note{NoteMeta: meta, Body: strings.TrimSpace(string(body))}, nil
 }
 
@@ -149,7 +172,7 @@ func (s *NoteService) UpdateNote(id, title, body string, tags []string) (Note, e
 	}
 	now := time.Now().Format(time.RFC3339)
 	note := Note{
-		NoteMeta: NoteMeta{ID: id, Title: title, Tags: tags, Created: existing.Created, Modified: now},
+		NoteMeta: NoteMeta{ID: id, Title: title, Tags: normalizeTags(tags), Created: existing.Created, Modified: now},
 		Body:     body,
 	}
 	if err := s.writeNote(note); err != nil {
