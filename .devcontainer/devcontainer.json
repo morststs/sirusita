@@ -1,7 +1,7 @@
 {
   "name": "sirusita-wails-dev",
   "build": {
-    "dockerfile": "Containerfile",
+    "dockerfile": "Dockerfile",
     "context": "..",
     "args": {
       "USERNAME": "dev",
@@ -10,14 +10,10 @@
     }
   },
 
-  // --- Podman 前提の設定 ---
-  // --userns=keep-id: rootless Podman でホスト UID をコンテナ内ユーザーへ写像し、
-  //   バインドマウントしたファイルの所有権ズレ（従来必要だった chown）を解消する。
-  // label=disable: SELinux 環境（Fedora/RHEL 等）でのマウント relabel 問題を回避。
-  "runArgs": [
-    "--userns=keep-id",
-    "--security-opt", "label=disable"
-  ],
+  // --- Docker 前提の設定 ---
+  // updateRemoteUserUID: Linux ホストでは dev ユーザーの UID/GID をホストユーザーに合わせ、
+  //   バインドマウントしたファイルの所有権ズレ（root 所有の生成物）を防ぐ。
+  "updateRemoteUserUID": true,
 
   "containerUser": "dev",
   "remoteUser": "dev",

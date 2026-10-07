@@ -1,7 +1,7 @@
-# Sirusita 開発用 devcontainer（Podman 前提・コンテナ内で完結）
+# Sirusita 開発用 devcontainer（Docker 前提・コンテナ内で完結）
 #
 # Go / Node / Wails のビルドツールチェーンと Claude Code CLI を 1 イメージに同梱する。
-# Windows クロスビルドまでコンテナ内で完結し、ホストの Docker/Podman ソケットや
+# Windows クロスビルドまでコンテナ内で完結し、ホストの Docker ソケットや
 # ネストした daemon には一切依存しない（docker-out-of-docker / dind を使わない）。
 FROM docker.io/library/golang:1.23-bookworm
 

@@ -15,44 +15,42 @@ Wails v2 + Svelte 5 で構築されたマークダウンベースのメモアプ
 
 ## 開発環境
 
-### Podman 必須（コンテナ内で完結）
+### Docker 必須（コンテナ内で完結）
 
-ホストに Go/Node/Wails はインストールしない。全てのビルド・テストは Podman コンテナ内で実行する。
-Windows 用 exe のクロスビルドまでコンテナ内で完結し、ホストの Docker/Podman ソケットや
-ネストした daemon には依存しない。
+ホストに Go/Node/Wails はインストールしない。全てのビルド・テストは Docker コンテナ内で実行する。
+Windows 用 exe のクロスビルドまでコンテナ内で完結し、ホストの Docker ソケットの共有や
+ネストした daemon（docker-out-of-docker / dind）には依存しない。
 
 コンテナ定義は 2 つある:
 
 - **ルート `Dockerfile`** … 最小構成のビルド用イメージ（下記コマンドが使う `wails-dev`）。
-- **`.devcontainer/`** … Podman 前提の devcontainer。Claude Code CLI 同梱・非 root の `dev`
-  ユーザー・`--userns=keep-id` で所有権ズレ（chown）を解消。詳細は
+- **`.devcontainer/`** … devcontainer。Claude Code CLI 同梱・非 root の `dev` ユーザー・
+  `updateRemoteUserUID` でホスト UID に合わせ所有権ズレを解消。詳細は
   `.devcontainer/README.md` を参照。VS Code / devcontainer CLI を使う場合はこちらが推奨。
 
 ```bash
-# Podman イメージのビルド（初回 or Dockerfile 変更時）
-podman build -t wails-dev .
+# Docker イメージのビルド（初回 or Dockerfile 変更時）
+docker build -t wails-dev .
 
 # Go コマンド実行
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev go test -v ./...
+docker run --rm -v "$PWD":/app -w /app wails-dev go test -v ./...
 
 # Wails ビルド（Linux）
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails build
+docker run --rm -v "$PWD":/app -w /app wails-dev wails build
 
 # Wails ビルド（Windows）
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails build -platform windows/amd64
+docker run --rm -v "$PWD":/app -w /app wails-dev wails build -platform windows/amd64
 
 # フロントエンド npm コマンド
-podman run --rm -v "$PWD":/app:Z -w /app/frontend wails-dev npm install <package>
+docker run --rm -v "$PWD":/app -w /app/frontend wails-dev npm install <package>
 ```
 
-> `:Z` は SELinux 環境でのマウントラベル付け。不要な環境では外してよい。
-> rootless Podman ではホストとコンテナの UID が揃うため、従来 Docker で必要だった
-> 生成物への `chown` は基本的に不要（`.devcontainer` は `--userns=keep-id` で対応）。
+> `wails-dev` イメージは root で動くため、Linux ホストでは生成物（`build/bin/`・
+> `frontend/dist/`・`frontend/node_modules/` 等）が root 所有になる。必要なら
+> `sudo chown -R "$(id -u):$(id -g)" build frontend` で戻す（Docker Desktop の
+> macOS / Windows では不要。`.devcontainer` を使えば発生しない）。
 
-> 補足: Podman をさらに別コンテナの**内側**で動かす（podman-in-container）特殊な状況では、
-> 次の回避が必要になることがある（通常のホスト環境では不要）:
-> `unqualified-search-registries = ["docker.io"]` を `registries.conf` に追加 /
-> `--network=host` / ビルド時の `--isolation=chroot`（read-only cgroup 回避）。
+> SELinux が有効なホスト（Fedora / RHEL 等）ではマウントを `-v "$PWD":/app:Z` にする。
 
 ### イメージ内容 (wails-dev / .devcontainer)
 
@@ -71,10 +69,10 @@ sirusita/
 ├── app.go                   # App 構造体（ライフサイクル + Import/Export/OpenURL）
 ├── d2_render.go             # D2 ソース → SVG 変換（RenderD2、Go ネイティブ）
 ├── note_service.go          # メモ CRUD ロジック
-├── Dockerfile               # ビルド用イメージ（Podman でビルド）
+├── Dockerfile               # ビルド用イメージ（Docker でビルド）
 ├── wails.json               # Wails 設定（outputfilename: sirusita）
-├── .devcontainer/           # Podman 前提の devcontainer（Claude Code 同梱）
-│   ├── Containerfile
+├── .devcontainer/           # Docker 前提の devcontainer（Claude Code 同梱）
+│   ├── Dockerfile
 │   ├── devcontainer.json
 │   └── README.md
 ├── .github/workflows/
@@ -158,19 +156,19 @@ sirusita: "1"
 
 ```bash
 # テスト実行
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev go test -v ./...
+docker run --rm -v "$PWD":/app -w /app wails-dev go test -v ./...
 
 # Linux ビルド
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails build
+docker run --rm -v "$PWD":/app -w /app wails-dev wails build
 
 # Windows ビルド（出力: build/bin/sirusita.exe）
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails build -platform windows/amd64
+docker run --rm -v "$PWD":/app -w /app wails-dev wails build -platform windows/amd64
 
 # フロントの純粋関数テスト（tagTree.js）
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev node --test frontend/src/tagTree.test.js
+docker run --rm -v "$PWD":/app -w /app wails-dev node --test frontend/src/tagTree.test.js
 
 # Wails バインディング再生成（Go API 変更時）
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails generate module
+docker run --rm -v "$PWD":/app -w /app wails-dev wails generate module
 ```
 
 ## ビルド注意点（svelte.config.js）

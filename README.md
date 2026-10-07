@@ -65,7 +65,7 @@ sirusita: "1"
 ビルドし、Release に `sirusita-windows-amd64.zip`（exe 本体）と
 `sirusita-contents.zip`（サンプルコンテンツ集）を自動添付します。
 
-## 開発（Podman でコンテナ内完結）
+## 開発（Docker でコンテナ内完結）
 
 ホストに Go / Node / Wails を入れず、すべてのビルド・テストをコンテナ内で行います。
 詳細な手順とコマンドは [`CLAUDE.md`](./CLAUDE.md) と
@@ -73,10 +73,10 @@ sirusita: "1"
 
 ```bash
 # 開発用イメージをビルド
-podman build -t wails-dev .
+docker build -t wails-dev .
 
 # Windows 用 exe をビルド（出力: build/bin/sirusita.exe）
-podman run --rm -v "$PWD":/app:Z -w /app wails-dev \
+docker run --rm -v "$PWD":/app -w /app wails-dev \
     wails build -platform windows/amd64
 ```
 
