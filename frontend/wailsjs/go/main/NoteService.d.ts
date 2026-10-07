@@ -14,6 +14,8 @@ export function ListNotes():Promise<Array<main.NoteMeta>>;
 
 export function ListTags():Promise<Array<string>>;
 
+export function RenameTag(arg1:string,arg2:string):Promise<number>;
+
 export function SearchNotes(arg1:string):Promise<Array<main.NoteMeta>>;
 
 export function UpdateNote(arg1:string,arg2:string,arg3:string,arg4:Array<string>):Promise<main.Note>;

@@ -26,6 +26,10 @@ export function ListTags() {
   return window['go']['main']['NoteService']['ListTags']();
 }
 
+export function RenameTag(arg1, arg2) {
+  return window['go']['main']['NoteService']['RenameTag'](arg1, arg2);
+}
+
 export function SearchNotes(arg1) {
   return window['go']['main']['NoteService']['SearchNotes'](arg1);
 }

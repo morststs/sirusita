@@ -211,6 +211,58 @@ func (s *NoteService) ListTags() ([]string, error) {
 	return tags, nil
 }
 
+// renameTagPath は tag が oldTag 自身または配下なら newTag 側へ付け替えた値を返す。
+// "ab" は "a" の配下ではない（"/" 境界で判定）。
+func renameTagPath(tag, oldTag, newTag string) string {
+	if tag == oldTag {
+		return newTag
+	}
+	if strings.HasPrefix(tag, oldTag+"/") {
+		return newTag + tag[len(oldTag):]
+	}
+	return tag
+}
+
+// RenameTag は oldTag とその配下のタグを newTag へ付け替え、更新したメモ件数を返す。
+// 既存タグと重なった場合は統合（重複除去）する。作成/更新日時は保持する。
+func (s *NoteService) RenameTag(oldTag, newTag string) (int, error) {
+	oldTag, newTag = NormalizeTag(oldTag), NormalizeTag(newTag)
+	if oldTag == "" || newTag == "" {
+		return 0, fmt.Errorf("tag must not be empty")
+	}
+	if oldTag == newTag {
+		return 0, nil
+	}
+	metas, err := s.ListNotes()
+	if err != nil {
+		return 0, err
+	}
+	count := 0
+	for _, meta := range metas {
+		renamed := make([]string, len(meta.Tags))
+		changed := false
+		for i, tag := range meta.Tags {
+			renamed[i] = renameTagPath(tag, oldTag, newTag)
+			if renamed[i] != tag {
+				changed = true
+			}
+		}
+		if !changed {
+			continue
+		}
+		note, err := s.GetNote(meta.ID)
+		if err != nil {
+			return count, err
+		}
+		note.Tags = normalizeTags(renamed)
+		if err := s.writeNote(note); err != nil {
+			return count, fmt.Errorf("failed to rename tag: %w", err)
+		}
+		count++
+	}
+	return count, nil
+}
+
 func (s *NoteService) SearchNotes(query string) ([]NoteMeta, error) {
 	entries, err := os.ReadDir(s.notesDir)
 	if err != nil {

@@ -79,3 +79,98 @@ func TestGetNoteNormalizesLegacyTags(t *testing.T) {
 		t.Errorf("GetNote tags = %v, want %v", got.Tags, want)
 	}
 }
+
+// テスト用: 固定日時でメモを作り ID を返す。
+func mustCreate(t *testing.T, svc *NoteService, title string, tags ...string) string {
+	t.Helper()
+	n, err := svc.CreateImported(title, "本文 "+title, tags,
+		"2026-01-01T00:00:00+09:00", "2026-01-02T00:00:00+09:00")
+	if err != nil {
+		t.Fatalf("CreateImported: %v", err)
+	}
+	return n.ID
+}
+
+func mustGet(t *testing.T, svc *NoteService, id string) Note {
+	t.Helper()
+	n, err := svc.GetNote(id)
+	if err != nil {
+		t.Fatalf("GetNote: %v", err)
+	}
+	return n
+}
+
+func TestRenameTagExactAndDescendants(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	a := mustCreate(t, svc, "a", "a", "other")
+	ax := mustCreate(t, svc, "ax", "a/x", "a/x/y")
+	ab := mustCreate(t, svc, "ab", "ab") // 前方一致の誤マッチ対象
+	none := mustCreate(t, svc, "none", "other")
+
+	count, err := svc.RenameTag("a", "図表/a")
+	if err != nil {
+		t.Fatalf("RenameTag: %v", err)
+	}
+	if count != 2 {
+		t.Errorf("count = %d, want 2", count)
+	}
+	checks := map[string][]string{
+		a:    {"図表/a", "other"},
+		ax:   {"図表/a/x", "図表/a/x/y"},
+		ab:   {"ab"},
+		none: {"other"},
+	}
+	for id, want := range checks {
+		if got := mustGet(t, svc, id).Tags; !reflect.DeepEqual(got, want) {
+			t.Errorf("%s tags = %v, want %v", mustGet(t, svc, id).Title, got, want)
+		}
+	}
+}
+
+// 既存タグと統合されたとき重複しないこと。
+func TestRenameTagMergeDedupes(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	id := mustCreate(t, svc, "m", "PlantUML", "図表")
+	count, err := svc.RenameTag("PlantUML", "図表")
+	if err != nil {
+		t.Fatalf("RenameTag: %v", err)
+	}
+	if count != 1 {
+		t.Errorf("count = %d, want 1", count)
+	}
+	if got, want := mustGet(t, svc, id).Tags, []string{"図表"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("tags = %v, want %v", got, want)
+	}
+}
+
+// 日時・タイトル・本文が保持されること。
+func TestRenameTagPreservesMeta(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	id := mustCreate(t, svc, "keep", "old")
+	if _, err := svc.RenameTag(" old ", "new"); err != nil {
+		t.Fatalf("RenameTag: %v", err)
+	}
+	n := mustGet(t, svc, id)
+	if n.Created != "2026-01-01T00:00:00+09:00" || n.Modified != "2026-01-02T00:00:00+09:00" {
+		t.Errorf("日時が変わった: created=%q modified=%q", n.Created, n.Modified)
+	}
+	if n.Title != "keep" || n.Body != "本文 keep" {
+		t.Errorf("タイトル/本文が変わった: %q / %q", n.Title, n.Body)
+	}
+	if want := []string{"new"}; !reflect.DeepEqual(n.Tags, want) {
+		t.Errorf("tags = %v, want %v", n.Tags, want)
+	}
+}
+
+func TestRenameTagInvalid(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	mustCreate(t, svc, "x", "a")
+	for _, c := range [][2]string{{"", "b"}, {"a", " / "}} {
+		if _, err := svc.RenameTag(c[0], c[1]); err == nil {
+			t.Errorf("RenameTag(%q, %q) にエラーが無い", c[0], c[1])
+		}
+	}
+	if count, err := svc.RenameTag("a", "a"); err != nil || count != 0 {
+		t.Errorf("同名リネーム = (%d, %v), want (0, nil)", count, err)
+	}
+}
