@@ -27,14 +27,16 @@ function toBase64(buffer) {
 // .md / .markdown / .zip を取り込む（他は無視）。解析は wasm（app.go と同じ規則）。
 async function importFiles(files) {
   const created = [];
+  let processed = false;
   for (const file of files) {
     if (!isImportable(file.name)) continue;
+    processed = true;
     const docs = await callWasm('ParseImport', [file.name, toBase64(await file.arrayBuffer())]);
     for (const d of docs) {
       created.push(await CreateImported(d.title, d.body, d.tags, d.created, d.modified));
     }
   }
-  return created;
+  return processed ? created : null;
 }
 
 export function ImportNote() {
@@ -43,7 +45,7 @@ export function ImportNote() {
     input.type = 'file';
     input.multiple = true;
     input.accept = '.md,.markdown,.zip';
-    input.addEventListener('cancel', () => resolve([]));
+    input.addEventListener('cancel', () => resolve(null));
     input.addEventListener('change', () => {
       importFiles([...(input.files || [])]).then(resolve, reject);
     });

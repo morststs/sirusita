@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import DOMPurify from 'dompurify';
   import { renderMarkdown, topLevelLineStarts } from './markdown.js';
-  import { OpenURL, RenderD2 } from '../wailsjs/go/main/App';
+  import { OpenURL, RenderD2 } from '$backend';
 
   let {
     body = '',
@@ -242,7 +242,7 @@
     padding: 2px 6px;
     border-radius: 3px;
     font-size: 0.88em;
-    font-family: "Source Code Pro", "SFMono-Regular", Consolas, monospace;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     color: #ce9178;
   }
   .preview :global(pre) {
