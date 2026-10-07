@@ -143,6 +143,42 @@ func TestRenameTagMergeDedupes(t *testing.T) {
 	}
 }
 
+// 配下タグの改名先が既存タグと衝突しても統合されること。
+func TestRenameTagDescendantCollisionMerges(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	id := mustCreate(t, svc, "c", "a/x", "図表/a/x")
+	count, err := svc.RenameTag("a", "図表/a")
+	if err != nil {
+		t.Fatalf("RenameTag: %v", err)
+	}
+	if count != 1 {
+		t.Errorf("count = %d, want 1", count)
+	}
+	if got, want := mustGet(t, svc, id).Tags, []string{"図表/a/x"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("tags = %v, want %v", got, want)
+	}
+}
+
+// 自身の子への改名（a -> a/b）。
+func TestRenameTagIntoOwnChild(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	first := mustCreate(t, svc, "first", "a")
+	second := mustCreate(t, svc, "second", "a/b")
+	count, err := svc.RenameTag("a", "a/b")
+	if err != nil {
+		t.Fatalf("RenameTag: %v", err)
+	}
+	if count != 2 {
+		t.Errorf("count = %d, want 2", count)
+	}
+	if got, want := mustGet(t, svc, first).Tags, []string{"a/b"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("first tags = %v, want %v", got, want)
+	}
+	if got, want := mustGet(t, svc, second).Tags, []string{"a/b/b"}; !reflect.DeepEqual(got, want) {
+		t.Errorf("second tags = %v, want %v", got, want)
+	}
+}
+
 // 日時・タイトル・本文が保持されること。
 func TestRenameTagPreservesMeta(t *testing.T) {
 	svc := NewNoteService(t.TempDir())
