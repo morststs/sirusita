@@ -5,6 +5,10 @@
 Wails v2 + Svelte 5 で構築されたマークダウンベースのメモアプリ（アプリ名: Sirusita）。
 メモは `~/.sirusita/notes/{UUID}.md` に YAML front matter 付きで保存される。
 
+同じ画面をブラウザで動かす **Web 版**（https://sirusita.e17.click/ ・GitHub Pages・メモはブラウザの
+IndexedDB に保存）もある（「Web 版（GitHub Pages）」参照）。**Microsoft Store 版**は準備中
+（提出済み・未公開。「MSIX / Microsoft Store」参照）。
+
 ## 技術スタック
 
 - **バックエンド:** Go 1.23 + Wails v2.12
@@ -67,8 +71,18 @@ docker run --rm -v "$PWD":/app -w /app/frontend wails-dev npm install <package>
 sirusita/
 ├── main.go                  # Wails エントリポイント、NoteService 初期化
 ├── app.go                   # App 構造体（ライフサイクル + Import/Export/OpenURL）
-├── d2_render.go             # D2 ソース → SVG 変換（RenderD2、Go ネイティブ）
+├── d2_render.go             # D2 ソース → SVG 変換（renderD2。デスクトップと wasm で共用）
+├── import_parse.go          # インポート解析（parseImportFile。デスクトップと wasm で共用）
+├── web_bridge.go            # wasm から呼ぶ JSON 入出力のラッパー（Web 版用。ビルドタグなし）
+├── wasm_main.go             # Web 版 wasm のエントリ（`js && wasm`）。JS へ関数を公開
 ├── note_service.go          # メモ CRUD ロジック
+├── PRIVACY.md               # プライバシーポリシー（Web 版と同梱して公開）
+├── docs/store-submission.md # Microsoft Store 提出内容の控え
+├── scripts/
+│   ├── build-wasm.sh        # Go を wasm にビルドし wasm_exec.js と生成先へ出力
+│   ├── wasm-smoke.mjs       # 生成した wasm の動作確認（Node）
+│   └── build-msix.ps1       # 未署名 MSIX を作る（Windows 専用・ASCII のみ）
+├── build/msix/AppxManifest.xml # MSIX マニフェスト（製品 ID 設定済み）
 ├── Dockerfile               # ビルド用イメージ（Docker でビルド）
 ├── wails.json               # Wails 設定（outputfilename: sirusita）
 ├── .devcontainer/           # Docker 前提の devcontainer（Claude Code 同梱）
@@ -76,12 +90,16 @@ sirusita/
 │   ├── devcontainer.json
 │   └── README.md
 ├── .github/workflows/
-│   └── release.yml          # v* タグ push で Windows exe をビルドし Release へ添付
+│   ├── release.yml          # v* タグ push で Windows exe をビルドし Release へ添付
+│   ├── msix.yml             # v* タグ push で MSIX をビルドし Artifact へ（Store 申請は手動）
+│   └── pages.yml            # main push で Web 版をビルドし GitHub Pages へ公開
 ├── frontend/
 │   ├── svelte.config.js     # vitePreprocess({ script: true })（後述の「ビルド注意点」参照）
 │   ├── vite.config.js       # Vite + svelte + @tailwindcss/vite
 │   ├── src/
 │   │   ├── main.js          # Svelte マウント
+│   │   ├── links.js         # 外部への案内リンク（STORE_URL。空のあいだ非表示）
+│   │   ├── backend/         # `$backend` の実装: wails.js（デスクトップ）/ web.js（Web）、webNotes.js（IndexedDB）、noteLogic.js、wasm.js + sirusita.worker.js（wasm 呼び出し）、generated/（wasm 生成物・gitignore）
 │   │   ├── style.css        # グローバルスタイル
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
 │   │   ├── monaco.js        # Monaco Editor のスリム構成（エディタ + Markdown + Worker 設定）
@@ -107,10 +125,10 @@ sirusita/
 | メソッド | 説明 |
 |---------|------|
 | `ExportNote(title, body)` | 開いているメモを H1 見出し付きマークダウンとして保存（保存ダイアログ） |
-| `ImportNote()` | マークダウン / ZIP を取り込み（複数選択可）。front matter→H1→ファイル名 でタイトル決定。`.zip` は中の `.md`/`.markdown` を一括取り込み。sirusita 形式なら日時も保持 |
+| `ImportNote()` | マークダウン / ZIP を取り込み（複数選択可）。front matter→H1→ファイル名 でタイトル決定。`.zip` は中の `.md`/`.markdown` を一括取り込み。sirusita 形式なら日時も保持。解析は `parseImportFile`（`import_parse.go`） |
 | `ImportFiles(paths)` | ドラッグ&ドロップ用。`.md`/`.markdown`/`.zip` を受け付ける |
 | `OpenURL(url)` | OS 既定のブラウザで URL を開く |
-| `RenderD2(source)` | D2 ソースを SVG へ変換（`d2_render.go`・完全オフライン・panic は recover でエラー化） |
+| `RenderD2(source)` | D2 ソースを SVG へ変換。本体は `renderD2`（`d2_render.go`）。Web 版と共用（完全オフライン・panic は recover でエラー化） |
 
 ### NoteService（note_service.go）
 
@@ -167,6 +185,15 @@ docker run --rm -v "$PWD":/app -w /app wails-dev wails build -platform windows/a
 # フロントの純粋関数テスト（tagTree.js）
 docker run --rm -v "$PWD":/app -w /app wails-dev node --test frontend/src/tagTree.test.js
 
+# Web 版のビルド（出力: frontend/dist-web。wasm のビルド込み）
+docker run --rm -v "$PWD":/app -w /app/frontend wails-dev npm run build:web
+
+# Web 版の wasm のビルドと動作確認
+docker run --rm -v "$PWD":/app -w /app wails-dev sh -c 'sh scripts/build-wasm.sh && node scripts/wasm-smoke.mjs'
+
+# IndexedDB 用の純粋ロジックのテスト（noteLogic.js）
+docker run --rm -v "$PWD":/app -w /app wails-dev node --test frontend/src/backend/noteLogic.test.js
+
 # Wails バインディング再生成（Go API 変更時）
 docker run --rm -v "$PWD":/app -w /app wails-dev wails generate module
 ```
@@ -188,6 +215,46 @@ script トランスパイルを明示することで取り込めるようにし�
 - 同じワークフローで `contents/*.md` を `sirusita-contents.zip` に固めて **exe とは別の ZIP**
   として Release に添付する。利用者はアプリの「インポート」からこの ZIP をそのまま取り込める。
 - CI のフロントエンドビルドも `frontend/svelte.config.js` に依存しているため、コミット必須。
+
+- `v*` タグの push では release.yml と msix.yml が同時に動く（MSIX は Artifact に置かれるだけ）。
+
+## Web 版（GitHub Pages）
+
+- **`$backend`:** `App.svelte` などは `$backend` から import する。`vite.config.js` のエイリアスで、
+  通常ビルドは `src/backend/wails.js`（Wails バインディング）、`--mode web` は `src/backend/web.js` に切り替わる。
+  `IS_WEB` で Web 版だけの案内（ブラウザ保存の注意・Store 案内）を出し分ける。
+- **メモの保存:** IndexedDB（DB 名 `sirusita` / ストア `notes`。`webNotes.js`）。ロジックは `noteLogic.js`。
+  データはブラウザごとで、サーバーには送られない。エクスポートは `.md` のダウンロード、
+  インポートは `<input type="file">` とウィンドウへのドロップ。
+- **wasm:** D2 描画とインポート解析は Go を wasm にして使う（`wasm_main.go` / `web_bridge.go`）。
+  必要になるまで読み込まない（遅延読み込み）。Worker（`sirusita.worker.js`）で実行し、1 回の呼び出しは
+  30 秒でタイムアウトして Worker を作り直す（`wasm.js`）。`wasm_exec.js` は wasm のビルドに使った Go と同じ版でなければならない（`build-wasm.sh` が同時に出力）。
+- **ビルドタグ:** デスクトップ専用の Go ファイル（main.go / app.go / note_service.go とそのテスト）は `//go:build !js`、
+  wasm のエントリ（wasm_main.go）は `//go:build js && wasm`。共用部（d2_render.go / import_parse.go / web_bridge.go）はタグなし。
+  Go を変えたら `GOOS=js GOARCH=wasm go vet .` が通ることを確認する。
+- **公開:** `.github/workflows/pages.yml` が main への push で `npm run build:web` を実行し、
+  `frontend/dist-web` に LICENSE / THIRD_PARTY_LICENSES.md / PRIVACY.md を足して Pages へデプロイする。
+  Pages の Source は **GitHub Actions**。
+- **独自ドメイン:** `sirusita.e17.click`。Route53 のホストゾーン `e17.click` に CNAME `sirusita` → `morststs.github.io`。
+  カスタムドメインの設定は GitHub Pages 側（リポジトリの Pages 設定）が正。
+- **外部 CDN を使わない:** Web 版はプライバシー上、閲覧時に第三者へ通信しない方針。
+  そのため Google Fonts は廃止し、フォント等はすべて自前で同梱する。
+
+## MSIX / Microsoft Store
+
+- **マニフェスト:** `build/msix/AppxManifest.xml`。製品 ID（Name / Publisher / PublisherDisplayName）は
+  Partner Center の値を設定済み（秘密情報ではない）。値は `docs/store-submission.md` の表を参照。
+- **`scripts/build-msix.ps1`:** `build/bin/sirusita.exe` から**未署名**の MSIX（`build/bin/sirusita.msix`）を作る。
+  Windows と Windows SDK（MakeAppx）が必要で Linux コンテナでは動かない。**ASCII のみ**で書くこと
+  （Windows PowerShell 5.1 は BOM なしを ANSI で読むため）。ロゴは `build/appicon.png` から生成。
+- **`.github/workflows/msix.yml`:** `v*` タグの push（または手動実行）で MSIX をビルドし、Artifact
+  `sirusita-msix` に置くだけ。Store への申請は自動化せず、Partner Center で手動アップロードする（半自動）。
+- **バージョン:** タグ `vX.Y.Z` の `X.Y.Z` がそのまま MSIX のバージョン（`X.Y.Z.0`）になる。
+  先頭は 0 にできず、更新のたびに公開中より大きくする。
+- **公開後:** Store ページ（`https://apps.microsoft.com/detail/9PPT0S6GKBLW`）が開けるようになったら、
+  `frontend/src/links.js` の `STORE_URL` と release.yml の `body` にリンクを追加し、README にも追記する。
+  公開前は UI・README・Release 本文にこの URL を出さない。
+- 提出内容の控えと手順: `docs/store-submission.md`。
 
 ## セキュリティ対策
 

@@ -65,6 +65,13 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          # Store 版（https://apps.microsoft.com/detail/9PPT0S6GKBLW）のリンクは、
+          # Store での公開を確認してから追加する（CLAUDE.md「Microsoft Store」参照）。
+          body: |
+            **ブラウザ: [Web 版](https://sirusita.e17.click/)**（インストール不要。メモはブラウザ内に保存）
+
+            **Windows:** `sirusita-windows-amd64.zip` を展開して `sirusita.exe` を実行してください。
+            未署名のため、Windows 11 のスマート アプリ コントロールにブロックされることがあります。
           files: |
             build/bin/sirusita-windows-amd64.zip
             build/bin/sirusita-contents.zip
