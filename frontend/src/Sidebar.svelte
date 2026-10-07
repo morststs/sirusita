@@ -164,7 +164,7 @@
     <input
       class="rename-input"
       bind:value={renameTo}
-      onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitRename(); } }} />
+      onkeydown={(e) => { if (e.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); submitRename(); } }} />
     {#if renameMerge}
       <p class="rename-merge">既存タグ「{renameTarget}」と統合されます</p>
     {/if}

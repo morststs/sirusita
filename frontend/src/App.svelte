@@ -30,6 +30,7 @@
   let toastMessage = $state('');
   let toastTimer = null;
   let saveTimer = null;
+  let pendingSave = null;
 
   // サイドバー幅（スプリッターでリサイズ可能）
   let sidebarWidth = $state(250);
@@ -188,6 +189,8 @@
   async function handleRenameTag(oldTag, newTag) {
     // 開いているメモのタグは先にローカルで付け替える。GetNote で読み直すと未保存の本文編集を
     // 失い、また旧タグのまま自動保存されるとリネームが巻き戻るため。
+    await flushPendingSave();
+    const targetId = selectedNote?.id;
     const prevTags = selectedNote?.tags;
     if (selectedNote) selectedNote.tags = renameTags(selectedNote.tags || [], oldTag, newTag);
     try {
@@ -198,7 +201,7 @@
       await refreshList();
       showToast(count + '件のマークダウンを更新しました');
     } catch (err) {
-      if (selectedNote && prevTags) selectedNote.tags = prevTags;
+      if (selectedNote && selectedNote.id === targetId && prevTags) selectedNote.tags = prevTags;
       await refreshList();
       showToast('タグの変更に失敗しました');
     }
@@ -234,7 +237,13 @@
     selectedNote.body = body;
 
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(async () => {
+    saveTimer = setTimeout(runBodySave, 500);
+  }
+
+  // 本文の自動保存本体。実行中は pendingSave に Promise を保持する。
+  async function runBodySave() {
+    saveTimer = null;
+    pendingSave = (async () => {
       try {
         selectedNote = await UpdateNote(
           selectedNote.id,
@@ -246,7 +255,20 @@
       } catch (err) {
         showToast('マークダウンの保存に失敗しました');
       }
-    }, 500);
+    })();
+    await pendingSave;
+    pendingSave = null;
+  }
+
+  // 保存待ち（タイマー）なら今すぐ保存し、保存中ならその完了を待つ。
+  async function flushPendingSave() {
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      if (selectedNote) await runBodySave();
+      else saveTimer = null;
+    } else if (pendingSave) {
+      await pendingSave;
+    }
   }
 
   async function handleToolbarUpdate({ field, value }) {
