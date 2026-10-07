@@ -6,7 +6,8 @@
   import Preview from './Preview.svelte';
   import Toc from './Toc.svelte';
   import { extractHeadings } from './markdown.js';
-  import { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags } from '../wailsjs/go/main/NoteService';
+  import { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag } from '../wailsjs/go/main/NoteService';
+  import { renameTagPath, renameTags } from './tagTree.js';
   import { ExportNote, ImportNote, ImportFiles } from '../wailsjs/go/main/App';
   import { OnFileDrop, OnFileDropOff } from '../wailsjs/runtime/runtime';
 
@@ -184,6 +185,25 @@
     selectedTag = tag;
   }
 
+  async function handleRenameTag(oldTag, newTag) {
+    // 開いているメモのタグは先にローカルで付け替える。GetNote で読み直すと未保存の本文編集を
+    // 失い、また旧タグのまま自動保存されるとリネームが巻き戻るため。
+    const prevTags = selectedNote?.tags;
+    if (selectedNote) selectedNote.tags = renameTags(selectedNote.tags || [], oldTag, newTag);
+    try {
+      const count = await RenameTag(oldTag, newTag);
+      if (typeof selectedTag === 'string') {
+        selectedTag = renameTagPath(selectedTag, oldTag, newTag) ?? selectedTag;
+      }
+      await refreshList();
+      showToast(count + '件のマークダウンを更新しました');
+    } catch (err) {
+      if (selectedNote && prevTags) selectedNote.tags = prevTags;
+      await refreshList();
+      showToast('タグの変更に失敗しました');
+    }
+  }
+
   async function handleCreateNote() {
     try {
       const note = await CreateNote('無題', '', []);
@@ -290,7 +310,8 @@
       onSelectNote={handleSelectNote}
       onSelectTag={handleSelectTag}
       onCreateNote={handleCreateNote}
-      onImport={handleImport} />
+      onImport={handleImport}
+      onRenameTag={handleRenameTag} />
   </div>
   <div class="splitter" class:active={dragging} onmousedown={startDrag} title="ドラッグで幅を調整"></div>
   <div class="main-area">

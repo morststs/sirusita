@@ -88,11 +88,12 @@ sirusita/
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
 │   │   ├── monaco.js        # Monaco Editor のスリム構成（エディタ + Markdown + Worker 設定）
 │   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期 + タブ/分割表示切替）
-│   │   ├── Sidebar.svelte   # 新規/インポートボタン + タグフィルタ + メモ一覧
+│   │   ├── Sidebar.svelte   # 新規/インポートボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン
 │   │   ├── Editor.svelte    # Monaco Editor によるマークダウン編集（スクロール位置を親へ通知）
 │   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画）
-│   │   └── Toc.svelte       # 見出し一覧パネル（クリックでプレビューの該当箇所へジャンプ）
+│   │   ├── Toc.svelte       # 見出し一覧パネル（クリックでプレビューの該当箇所へジャンプ）
+│   │   └── tagTree.js       # 階層タグ（"親/子"）ユーティリティ: 正規化・前方一致・ツリー構築・リネーム計算（node --test でテスト）
 │   └── wailsjs/             # Wails 自動生成バインディング（編集不可・ビルド時に再生成）
 ├── contents/                # 配布用サンプルメモ集（題名がそのままファイル名。
 │                            #   sirusita 形式。release で別 ZIP として配布）
@@ -125,6 +126,7 @@ sirusita/
 | `UpdateNote(id, title, body, tags)` | メモ更新（created 保持） |
 | `DeleteNote(id)` | メモ削除 |
 | `ListTags()` | 全タグ一覧（重複排除、ソート済） |
+| `RenameTag(old, new)` | タグとその配下（`old/…`）を一括で付け替え。既存タグとは統合。作成/更新日時は保持。更新件数を返す |
 | `SearchNotes(query)` | タイトル・本文の全文検索 |
 
 ## メモファイル形式
@@ -148,6 +150,10 @@ sirusita: "1"
 タイトル・タグだけでなく作成/更新日時もそのまま引き継ぐ。外部から取り込んだ
 マーカー無しのマークダウンは、作成/更新日時を取り込み時の現在時刻にする。
 
+タグは `/` 区切りで階層を表す（例: `プログラミング/Go`）。保存・読み込み時に
+`NormalizeTag` でセグメント前後の空白と空セグメントを除去する。サイドバーで親タグを
+選ぶと配下のタグが付いたメモも表示される。
+
 ## よく使うコマンド
 
 ```bash
@@ -159,6 +165,9 @@ podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails build
 
 # Windows ビルド（出力: build/bin/sirusita.exe）
 podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails build -platform windows/amd64
+
+# フロントの純粋関数テスト（tagTree.js）
+podman run --rm -v "$PWD":/app:Z -w /app wails-dev node --test frontend/src/tagTree.test.js
 
 # Wails バインディング再生成（Go API 変更時）
 podman run --rm -v "$PWD":/app:Z -w /app wails-dev wails generate module

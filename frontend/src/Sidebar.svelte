@@ -1,6 +1,6 @@
 <script>
-  import { Accordion, AccordionItem } from 'flowbite-svelte';
-  import { buildTagTree, matchesTag } from './tagTree.js';
+  import { Accordion, AccordionItem, Modal, Button } from 'flowbite-svelte';
+  import { buildTagTree, matchesTag, normalizeTag, allTagPaths } from './tagTree.js';
 
   let {
     notes = [],
@@ -10,7 +10,8 @@
     onCreateNote,
     onImport,
     onSelectTag,
-    onSelectNote
+    onSelectNote,
+    onRenameTag
   } = $props();
 
   // 「タグ無し」フィルタ用のセンチネル（実在タグ文字列と衝突しない Symbol）。
@@ -49,6 +50,31 @@
         ? notes.filter(n => !n.tags || n.tags.length === 0)
         : notes.filter(n => matchesTag(n.tags, selectedTag))
   );
+
+  // タグ名変更モーダルの状態
+  let renameOpen = $state(false);
+  let renameFrom = $state('');
+  let renameTo = $state('');
+  let renameTarget = $derived(normalizeTag(renameTo));
+  let renameDisabled = $derived(renameTarget === '' || renameTarget === renameFrom);
+  // 自分自身・自分の配下以外の既存タグ（中間ノード含む）と一致すれば統合になる
+  let renameMerge = $derived(
+    !renameDisabled &&
+      !(renameTarget === renameFrom || renameTarget.startsWith(renameFrom + '/')) &&
+      allTagPaths(tags).has(renameTarget)
+  );
+
+  function openRename(path) {
+    renameFrom = path;
+    renameTo = path;
+    renameOpen = true;
+  }
+
+  function submitRename() {
+    if (renameDisabled) return;
+    onRenameTag?.(renameFrom, renameTarget);
+    renameOpen = false;
+  }
 </script>
 
 {#snippet tagNode(node, depth)}
@@ -69,6 +95,7 @@
       title={node.path}>
       {node.name} <span class="tag-count">({node.count})</span>
     </button>
+    <button class="tag-rename" onclick={() => openRename(node.path)} title="タグ名を変更">✎</button>
   </div>
   {#if node.children.length > 0 && expanded.has(node.path)}
     {#each node.children as child (child.path)}
@@ -131,6 +158,21 @@
       </div>
     </AccordionItem>
   </Accordion>
+
+  <Modal title="タグ名を変更" bind:open={renameOpen} size="xs">
+    <p class="rename-hint">「/」で区切ると階層になります。配下のタグもまとめて変更されます。</p>
+    <input
+      class="rename-input"
+      bind:value={renameTo}
+      onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitRename(); } }} />
+    {#if renameMerge}
+      <p class="rename-merge">既存タグ「{renameTarget}」と統合されます</p>
+    {/if}
+    {#snippet footer()}
+      <Button type="button" disabled={renameDisabled} onclick={submitRename}>変更</Button>
+      <Button type="button" color="alternative" onclick={() => (renameOpen = false)}>キャンセル</Button>
+    {/snippet}
+  </Modal>
 </div>
 
 <style>
@@ -222,6 +264,45 @@
   .tag-count {
     color: #777777;
     font-size: 11px;
+  }
+  .tag-rename {
+    flex: none;
+    visibility: hidden;
+    padding: 0 4px;
+    border: none;
+    background: none;
+    color: #888888;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .tag-row:hover .tag-rename {
+    visibility: visible;
+  }
+  .tag-rename:hover {
+    color: #ffffff;
+  }
+  .rename-hint {
+    font-size: 12px;
+    color: #999999;
+    margin-bottom: 8px;
+  }
+  .rename-input {
+    width: 100%;
+    padding: 6px 8px;
+    background: #3c3c3c;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    color: #ffffff;
+    font-size: 13px;
+  }
+  .rename-input:focus {
+    outline: none;
+    border-color: #0e639c;
+  }
+  .rename-merge {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #e0a040;
   }
   .note-item {
     overflow: hidden;

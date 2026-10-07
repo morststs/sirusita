@@ -8,11 +8,18 @@
   let tagsInput = $state('');
   let currentNoteId = null;
 
+  let lastTagsText = null;
+
   $effect(() => {
-    if (note && note.id !== currentNoteId) {
+    if (!note) return;
+    if (note.id !== currentNoteId) {
       currentNoteId = note.id;
       title = note.title || '';
-      tagsInput = (note.tags || []).join(', ');
+    }
+    const tagsText = (note.tags || []).join(', ');
+    if (tagsText !== lastTagsText) {
+      lastTagsText = tagsText;
+      tagsInput = tagsText;
     }
   });
 
