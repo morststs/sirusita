@@ -7,7 +7,7 @@
   import Toc from './Toc.svelte';
   import { extractHeadings } from './markdown.js';
   import { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag } from '../wailsjs/go/main/NoteService';
-  import { renameTagPath, renameTags } from './tagTree.js';
+  import { renameTagPath, renameTags, allTagPaths } from './tagTree.js';
   import { ExportNote, ImportNote, ImportFiles } from '../wailsjs/go/main/App';
   import { OnFileDrop, OnFileDropOff } from '../wailsjs/runtime/runtime';
 
@@ -199,9 +199,18 @@
         selectedTag = renameTagPath(selectedTag, oldTag, newTag) ?? selectedTag;
       }
       await refreshList();
+      if (typeof selectedTag === 'string' && !allTagPaths(tags).has(selectedTag)) selectedTag = null;
       showToast(count + '件のマークダウンを更新しました');
     } catch (err) {
-      if (selectedNote && selectedNote.id === targetId && prevTags) selectedNote.tags = prevTags;
+      // 部分失敗で開いているメモが既にディスク上で書き換わっている場合があるため、ディスクから tags だけ読み直す
+      if (selectedNote && selectedNote.id === targetId) {
+        try {
+          const fresh = await GetNote(targetId);
+          if (selectedNote && selectedNote.id === targetId) selectedNote.tags = fresh.tags;
+        } catch {
+          if (selectedNote && selectedNote.id === targetId && prevTags) selectedNote.tags = prevTags;
+        }
+      }
       await refreshList();
       showToast('タグの変更に失敗しました');
     }
@@ -243,7 +252,10 @@
   // 本文の自動保存本体。実行中は pendingSave に Promise を保持する。
   async function runBodySave() {
     saveTimer = null;
-    pendingSave = (async () => {
+    // 実行中の保存があれば完了を待ち、UpdateNote が重ならないようにする
+    if (pendingSave) await pendingSave;
+    if (!selectedNote) return;
+    const p = (async () => {
       try {
         selectedNote = await UpdateNote(
           selectedNote.id,
@@ -256,8 +268,9 @@
         showToast('マークダウンの保存に失敗しました');
       }
     })();
-    await pendingSave;
-    pendingSave = null;
+    pendingSave = p;
+    await p;
+    if (pendingSave === p) pendingSave = null;
   }
 
   // 保存待ち（タイマー）なら今すぐ保存し、保存中ならその完了を待つ。

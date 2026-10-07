@@ -22,6 +22,8 @@ test('renameTagPath / renameTags', () => {
   assert.equal(renameTagPath('a/x', 'a', 'z/q'), 'z/q/x');
   assert.equal(renameTagPath('ab', 'a', 'z'), null);
   assert.deepEqual(renameTags(['PlantUML', '図表', 'x'], 'PlantUML', '図表'), ['図表', 'x']);
+  assert.equal(renameTagPath('a/b', 'a', 'a/b'), 'a/b/b');
+  assert.deepEqual(renameTags(['a/x', '図表/a/x'], 'a', '図表/a'), ['図表/a/x']);
 });
 
 test('allTagPaths は中間ノードを補完する', () => {

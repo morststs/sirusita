@@ -14,6 +14,7 @@
     if (!note) return;
     if (note.id !== currentNoteId) {
       currentNoteId = note.id;
+      lastTagsText = null;
       title = note.title || '';
     }
     const tagsText = (note.tags || []).join(', ');

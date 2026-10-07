@@ -1,6 +1,6 @@
 <script>
   import { Accordion, AccordionItem, Modal, Button } from 'flowbite-svelte';
-  import { buildTagTree, matchesTag, normalizeTag, allTagPaths } from './tagTree.js';
+  import { buildTagTree, matchesTag, normalizeTag, allTagPaths, renameTagPath } from './tagTree.js';
 
   let {
     notes = [],
@@ -29,16 +29,20 @@
   }
   let expanded = $state(loadExpanded());
 
+  function saveExpanded(set) {
+    try {
+      localStorage.setItem(EXPANDED_KEY, JSON.stringify([...set]));
+    } catch {
+      // 保存できなくても動作は継続
+    }
+  }
+
   function toggleExpanded(path) {
     const next = new Set(expanded);
     if (next.has(path)) next.delete(path);
     else next.add(path);
     expanded = next;
-    try {
-      localStorage.setItem(EXPANDED_KEY, JSON.stringify([...next]));
-    } catch {
-      // 保存できなくても動作は継続
-    }
+    saveExpanded(next);
   }
 
   let tagTree = $derived(buildTagTree(tags, notes));
@@ -72,6 +76,10 @@
 
   function submitRename() {
     if (renameDisabled) return;
+    // 展開状態もリネームに追従させる
+    const moved = new Set([...expanded].map(p => renameTagPath(p, renameFrom, renameTarget) ?? p));
+    expanded = moved;
+    saveExpanded(moved);
     onRenameTag?.(renameFrom, renameTarget);
     renameOpen = false;
   }

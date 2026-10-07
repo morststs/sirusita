@@ -1,5 +1,6 @@
 // 階層タグ（"親/子"）ユーティリティ。正規化・リネーム規則は Go 側（note_service.go）と同じ。
 
+// 注: JS の trim() と Go の strings.TrimSpace は稀な文字（U+FEFF / U+0085）でのみ差があるが許容する。
 export function normalizeTag(tag) {
   return tag.split('/').map(s => s.trim()).filter(s => s.length > 0).join('/');
 }
