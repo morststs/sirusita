@@ -73,6 +73,7 @@
 
   async function handleFileDrop(paths) {
     if (!paths || paths.length === 0) return;
+    await flushPendingSave();
     try {
       const imported = await ImportFiles(paths);
       if (imported && imported.length > 0) {
@@ -173,6 +174,8 @@
   }
 
   async function handleSelectNote(id) {
+    // 切替前に未保存の本文を保存する（タイマーが切替後のメモに対して走ると編集が失われるため）
+    await flushPendingSave();
     try {
       selectedNote = await GetNote(id);
       navView('preview');
@@ -217,6 +220,7 @@
   }
 
   async function handleCreateNote() {
+    await flushPendingSave();
     try {
       const note = await CreateNote('無題', '', []);
       await refreshList();
@@ -228,6 +232,7 @@
   }
 
   async function handleImport() {
+    await flushPendingSave();
     try {
       const imported = await ImportNote();
       if (imported && imported.length > 0) {
@@ -253,7 +258,8 @@
   async function runBodySave() {
     saveTimer = null;
     // 実行中の保存があれば完了を待ち、UpdateNote が重ならないようにする
-    if (pendingSave) await pendingSave;
+    // （複数の待機者が同時に再開しうるので、while で再確認する）
+    while (pendingSave) await pendingSave;
     if (!selectedNote) return;
     const p = (async () => {
       try {
@@ -329,6 +335,7 @@
   async function confirmDelete() {
     showDeleteConfirm = false;
     if (!selectedNote) return;
+    await flushPendingSave();
     try {
       await DeleteNote(selectedNote.id);
       selectedNote = null;
