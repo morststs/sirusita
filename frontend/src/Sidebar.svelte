@@ -1,5 +1,6 @@
 <script>
   import { Accordion, AccordionItem } from 'flowbite-svelte';
+  import { buildTagTree, matchesTag } from './tagTree.js';
 
   let {
     notes = [],
@@ -15,14 +16,66 @@
   // 「タグ無し」フィルタ用のセンチネル（実在タグ文字列と衝突しない Symbol）。
   const UNTAGGED = Symbol('untagged');
 
+  // タグツリーの展開状態（path の集合）。localStorage は使えない環境もあるので失敗時は全て閉じる。
+  const EXPANDED_KEY = 'sirusita.tagTree.expanded';
+  function loadExpanded() {
+    try {
+      const raw = localStorage.getItem(EXPANDED_KEY);
+      return new Set(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set();
+    }
+  }
+  let expanded = $state(loadExpanded());
+
+  function toggleExpanded(path) {
+    const next = new Set(expanded);
+    if (next.has(path)) next.delete(path);
+    else next.add(path);
+    expanded = next;
+    try {
+      localStorage.setItem(EXPANDED_KEY, JSON.stringify([...next]));
+    } catch {
+      // 保存できなくても動作は継続
+    }
+  }
+
+  let tagTree = $derived(buildTagTree(tags, notes));
+
   let filteredNotes = $derived(
     selectedTag === null
       ? notes
       : selectedTag === UNTAGGED
         ? notes.filter(n => !n.tags || n.tags.length === 0)
-        : notes.filter(n => n.tags && n.tags.includes(selectedTag))
+        : notes.filter(n => matchesTag(n.tags, selectedTag))
   );
 </script>
+
+{#snippet tagNode(node, depth)}
+  <div class="tag-row" style="padding-left: {depth * 12}px">
+    {#if node.children.length > 0}
+      <button class="tag-toggle"
+        onclick={() => toggleExpanded(node.path)}
+        title={expanded.has(node.path) ? '折りたたむ' : '展開する'}>
+        {expanded.has(node.path) ? '▾' : '▸'}
+      </button>
+    {:else}
+      <span class="tag-toggle-spacer"></span>
+    {/if}
+    <button
+      class="tag-item"
+      class:active={selectedTag === node.path}
+      onclick={() => onSelectTag?.(node.path)}
+      title={node.path}>
+      {node.name} <span class="tag-count">({node.count})</span>
+    </button>
+  </div>
+  {#if node.children.length > 0 && expanded.has(node.path)}
+    {#each node.children as child (child.path)}
+      {@render tagNode(child, depth + 1)}
+    {/each}
+  {/if}
+{/snippet}
 
 <div class="sidebar-content">
   <div class="sidebar-actions">
@@ -58,13 +111,8 @@
           onclick={() => onSelectTag?.(UNTAGGED)}>
           タグ無し
         </button>
-        {#each tags as tag}
-          <button
-            class="tag-item"
-            class:active={selectedTag === tag}
-            onclick={() => onSelectTag?.(tag)}>
-            {tag}
-          </button>
+        {#each tagTree as node (node.path)}
+          {@render tagNode(node, 0)}
         {/each}
       </div>
     </AccordionItem>
@@ -143,6 +191,37 @@
   .tag-item.active, .note-item.active {
     background: #094771;
     color: #ffffff;
+  }
+  .tag-row {
+    display: flex;
+    align-items: center;
+  }
+  .tag-row .tag-item {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tag-toggle, .tag-toggle-spacer {
+    flex: none;
+    width: 18px;
+  }
+  .tag-toggle {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #888888;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .tag-toggle:hover {
+    color: #ffffff;
+  }
+  .tag-count {
+    color: #777777;
+    font-size: 11px;
   }
   .note-item {
     overflow: hidden;
