@@ -215,7 +215,7 @@ script トランスパイルを明示することで取り込めるようにし�
 - 同じワークフローで `contents/*.md` を `sirusita-contents.zip` に固めて **exe とは別の ZIP**
   として Release に添付する。利用者はアプリの「インポート」からこの ZIP をそのまま取り込める。
 - CI のフロントエンドビルドも `frontend/svelte.config.js` に依存しているため、コミット必須。
-- `v* タグの push では release.yml と msix.yml が同時に動く（MSIX は Artifact に置かれるだけ）。
+- `v*` タグの push では release.yml と msix.yml が同時に動く（MSIX は Artifact に置かれるだけ）。
 
 ## Web 版（GitHub Pages）
 
