@@ -22,7 +22,7 @@
       minimap: { enabled: false },
       fontSize: 14,
       lineHeight: 22,
-      fontFamily: '"Source Code Pro", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+      fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
       lineNumbers: 'on',
       scrollBeyondLastLine: false,
       renderWhitespace: 'none',

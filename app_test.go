@@ -1,7 +1,8 @@
+//go:build !js
+
 package main
 
 import (
-	"archive/zip"
 	"os"
 	"path/filepath"
 	"strings"
@@ -78,52 +79,28 @@ created: 2020-01-01T00:00:00+09:00
 	}
 }
 
-// ZIP に含まれる複数の .md を一括で取り込めることを確認する。
-func TestImportZip(t *testing.T) {
+// ImportFiles は .md / .zip を取り込み、他の拡張子は無視する。
+func TestImportFilesMixed(t *testing.T) {
 	app := newTestApp(t)
-	zipPath := filepath.Join(t.TempDir(), "bundle.zip")
-
-	f, err := os.Create(zipPath)
+	dir := t.TempDir()
+	mdPath := filepath.Join(dir, "one.md")
+	if err := os.WriteFile(mdPath, []byte("# One\n\n本文\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	zipPath := filepath.Join(dir, "two.zip")
+	if err := os.WriteFile(zipPath, zipBytes(t, map[string]string{"x.md": "# X\n", "y.md": "# Y\n"}), 0644); err != nil {
+		t.Fatal(err)
+	}
+	notes, err := app.ImportFiles([]string{mdPath, zipPath, filepath.Join(dir, "skip.txt")})
 	if err != nil {
-		t.Fatalf("Create zip: %v", err)
+		t.Fatalf("ImportFiles: %v", err)
 	}
-	zw := zip.NewWriter(f)
-	files := map[string]string{
-		"a.md":       "---\ntitle: \"A\"\nsirusita: \"1\"\n---\n\n本文A\n",
-		"sub/b.md":   "# B見出し\n\n本文B\n",
-		"readme.txt": "無視されるべき\n",
-		"c.markdown": "---\ntitle: \"C\"\n---\n\n本文C\n",
-	}
-	for name, content := range files {
-		w, err := zw.Create(name)
-		if err != nil {
-			t.Fatalf("zip Create %s: %v", name, err)
-		}
-		if _, err := w.Write([]byte(content)); err != nil {
-			t.Fatalf("zip Write %s: %v", name, err)
-		}
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatalf("zip Close: %v", err)
-	}
-	f.Close()
-
-	notes, err := app.importZip(zipPath)
-	if err != nil {
-		t.Fatalf("importZip: %v", err)
-	}
-	// .md / .markdown の 3 件のみ取り込まれ、.txt は無視される。
 	if len(notes) != 3 {
-		t.Fatalf("取り込み件数 = %d, want 3", len(notes))
+		t.Fatalf("件数 = %d, want 3", len(notes))
 	}
-	titles := map[string]bool{}
-	for _, n := range notes {
-		titles[n.Title] = true
-	}
-	for _, want := range []string{"A", "B見出し", "C"} {
-		if !titles[want] {
-			t.Errorf("タイトル %q が取り込まれていない: %v", want, titles)
-		}
+	list, err := app.NoteService.ListNotes()
+	if err != nil || len(list) != 3 {
+		t.Fatalf("ListNotes = %d件, err=%v", len(list), err)
 	}
 }
 

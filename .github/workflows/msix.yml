@@ -1,0 +1,91 @@
+name: Build MSIX for Microsoft Store
+
+# Microsoft Store 向けの MSIX を作り、Artifact に置くだけのワークフロー。
+#
+# - v* タグの push（release.yml と同時に動く）: MSIX をビルドして Artifact（sirusita-msix）に置く。
+#   MSIX のバージョンはタグの X.Y.Z をそのまま使う（下記 Decide version）。
+# - 手動実行: バージョンを指定してビルドする。
+#
+# Store への申請は自動化しない（半自動）。Artifact をダウンロードして、利用者が
+# Partner Center の「パッケージ」にアップロードする。手順は docs/store-submission.md を参照。
+#
+# MSIX は未署名のまま申請する（Store が審査後に署名する）。
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'MSIX のバージョン（例: 1.5.0）。Store の規則で先頭を 0 にできず、公開中より大きくする必要がある'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # タグ vX.Y.Z → MSIX X.Y.Z（タグは v1.0.0 以上なので、そのまま使える）。
+      # 入力値・タグ名は env 経由で渡す（run: に直接展開するとスクリプトとして解釈され得るため）。
+      - name: Decide version
+        id: version
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [ "$EVENT" = "push" ]; then
+            if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              echo "::error::タグ $TAG は vX.Y.Z の形ではありません"
+              exit 1
+            fi
+            v="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+          else
+            v="$INPUT_VERSION"
+          fi
+          echo "MSIX version: $v"
+          echo "msix_version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.23'
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Install Wails CLI
+        shell: bash
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Build Windows binary
+        shell: bash
+        run: wails build -platform windows/amd64
+
+      # frontend/dist は上の build で生成されるので、テストはその後に実行する。
+      - name: Run tests
+        shell: bash
+        run: go test ./...
+
+      - name: Build MSIX
+        shell: pwsh
+        env:
+          MSIX_VERSION: ${{ steps.version.outputs.msix_version }}
+        run: ./scripts/build-msix.ps1 -Version $env:MSIX_VERSION
+
+      - name: Upload MSIX
+        uses: actions/upload-artifact@v7
+        with:
+          name: sirusita-msix
+          path: build/bin/sirusita.msix
+          if-no-files-found: error

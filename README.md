@@ -4,6 +4,13 @@
 メモは YAML front matter 付きのマークダウンファイルとしてローカルに保存され、
 タグでの分類・全文検索・プレビュー表示に対応しています。
 
+## 使い方
+
+- **Web 版:** <https://sirusita.e17.click/> を開くだけで使えます（インストール不要）。
+  メモはお使いのブラウザ内に保存されます。
+- **Windows 版:** [GitHub Releases](https://github.com/morststs/sirusita/releases/latest) から入手できます
+  （[ダウンロード](#ダウンロードwindows)参照）。Microsoft Store 版は準備中です。
+
 ## 主な機能
 
 - **マークダウン編集とプレビュー** — 編集タブとプレビュータブを切り替え。プレビューは文字サイズを可変。
@@ -95,6 +102,13 @@ sirusita: "1"
 - **UI:** Flowbite Svelte + TailwindCSS 4
 - ライセンス: MIT
 
+## Web 版
+
+デスクトップ版と同じ画面がブラウザで動きます。メモはブラウザの IndexedDB に保存され、
+サーバーには送信されません（ブラウザのデータを消去するとメモも消えるため、
+大事なメモはエクスポートしてください）。D2 図の描画とインポートの解析は、
+Go を WebAssembly にしたものをブラウザ内で実行しています。
+
 ## ダウンロード（Windows）
 
 ビルド済みの Windows 向け実行ファイルは GitHub Releases から入手できます。
@@ -119,6 +133,22 @@ docker build -t wails-dev .
 docker run --rm -v "$PWD":/app -w /app wails-dev \
     wails build -platform windows/amd64
 ```
+
+## Web 版のビルド・プレビュー
+
+```bash
+# Web 版をビルド（出力: frontend/dist-web。Go の wasm のビルドを含む）
+docker run --rm -v "$PWD":/app -w /app/frontend wails-dev npm run build:web
+
+# ビルドしたものをプレビュー
+docker run --rm -v "$PWD":/app -w /app/frontend -p 4173:4173 wails-dev npm run preview:web -- --host
+```
+
+main への push で GitHub Actions が Web 版を GitHub Pages へ公開します。
+
+## プライバシー
+
+プライバシーポリシーは [`PRIVACY.md`](./PRIVACY.md) を参照してください。
 
 ## ライセンス
 

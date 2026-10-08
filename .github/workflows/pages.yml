@@ -1,0 +1,78 @@
+name: Deploy Web to GitHub Pages
+
+# main への push で Web 版（Svelte のフロントエンド + Go を wasm にした D2 描画・インポート解析）を
+# ビルドし、GitHub Pages（https://sirusita.e17.click/）へ公開する。
+# デスクトップ版の release.yml / msix.yml とは独立している。
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開が重なったときは後から来たものを待たせる（実行中の公開は中断しない）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.23'
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # go test は Wails（GTK/WebKit の cgo）と frontend/dist を要求するためここでは
+      # 実行しない（release.yml と開発用コンテナで実行する）。wasm 向けの vet のみ行う。
+      - name: Vet wasm build
+        run: GOOS=js GOARCH=wasm go vet .
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Unit tests (JS)
+        run: node --test frontend/src/tagTree.test.js frontend/src/backend/noteLogic.test.js
+
+      - name: Build web
+        working-directory: frontend
+        run: npm run build:web
+
+      # 著作権表示の保持が再頒布条件なので、ライセンス表示物を公開物に同梱する。
+      - name: Add license files
+        run: cp LICENSE THIRD_PARTY_LICENSES.md PRIVACY.md frontend/dist-web/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: frontend/dist-web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

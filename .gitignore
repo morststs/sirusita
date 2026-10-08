@@ -9,3 +9,6 @@ certs/
 .git.bak/
 
 input/
+tmp/
+frontend/dist-web
+frontend/src/backend/generated/

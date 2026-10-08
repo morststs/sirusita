@@ -59,7 +59,7 @@
     text-align: left;
     color: #cccccc;
     cursor: pointer;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
     font-size: 13px;
     white-space: nowrap;
     overflow: hidden;

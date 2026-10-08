@@ -13,10 +13,10 @@ import (
 	"oss.terrastruct.com/util-go/go2"
 )
 
-// RenderD2 は D2 のソースを SVG 文字列へ変換する（完全オフライン・Go ネイティブ）。
-// フロントエンドの ```d2 コードブロックから呼び出される。
+// renderD2 は D2 のソースを SVG 文字列へ変換する（完全オフライン・Go ネイティブ）。
+// Wails に依存しないので、デスクトップ版（App.RenderD2）と Web 版（web_bridge.go）で共用する。
 // レイアウトは外部依存のない dagre エンジン、テーマは UI に合わせたダーク系を使う。
-func (a *App) RenderD2(source string) (svg string, err error) {
+func renderD2(source string) (svg string, err error) {
 	// 不正な D2 ソースは Compile/Layout が panic することがあるため、
 	// recover でエラーへ変換し、レンダリング失敗でアプリが落ちないようにする。
 	defer func() {

@@ -6,10 +6,11 @@
   import Preview from './Preview.svelte';
   import Toc from './Toc.svelte';
   import { extractHeadings } from './markdown.js';
-  import { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag } from '../wailsjs/go/main/NoteService';
+  import {
+    ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag,
+    ExportNote, ImportNote, OnImportDrop, OffImportDrop,
+  } from '$backend';
   import { renameTagPath, renameTags, allTagPaths } from './tagTree.js';
-  import { ExportNote, ImportNote, ImportFiles } from '../wailsjs/go/main/App';
-  import { OnFileDrop, OnFileDropOff } from '../wailsjs/runtime/runtime';
 
   let notes = $state([]);
   let tags = $state([]);
@@ -59,23 +60,22 @@
     }
     await refreshList();
 
-    // マークダウンファイルをウィンドウへドラッグ&ドロップで取り込む
-    // （第2引数 false でウィンドウ全体をドロップ対象にする）
-    OnFileDrop((x, y, paths) => { handleFileDrop(paths); }, false);
+    // マークダウン / ZIP をウィンドウへドラッグ&ドロップで取り込む
+    OnImportDrop(handleFileDrop);
   });
 
   onDestroy(() => {
     clearTimeout(toastTimer);
     clearTimeout(saveTimer);
     stopDrag();
-    OnFileDropOff();
+    OffImportDrop();
   });
 
-  async function handleFileDrop(paths) {
-    if (!paths || paths.length === 0) return;
+  // runImport は取り込みを実行する関数（$backend の OnImportDrop 参照）。
+  async function handleFileDrop(runImport) {
     await flushPendingSave();
     try {
-      const imported = await ImportFiles(paths);
+      const imported = await runImport();
       if (imported && imported.length > 0) {
         await refreshList();
         selectedNote = imported[imported.length - 1];
@@ -85,6 +85,8 @@
         showToast('マークダウンファイル (.md) が見つかりませんでした');
       }
     } catch (err) {
+      console.error(err);
+      await refreshList().catch(() => {});
       showToast('インポートに失敗しました');
     }
   }
@@ -242,6 +244,8 @@
         showToast(imported.length + '件のマークダウンをインポートしました');
       }
     } catch (err) {
+      console.error(err);
+      await refreshList().catch(() => {});
       showToast('インポートに失敗しました');
     }
   }
@@ -464,7 +468,7 @@
     cursor: pointer;
     border-bottom: 2px solid transparent;
     color: #969696;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
   }
   .tab-bar button:hover {
     color: #ffffff;
@@ -491,7 +495,7 @@
     background: #2d2d2d;
     color: #cccccc;
     cursor: pointer;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
     font-size: 13px;
   }
   .toc-btn:hover {
@@ -510,7 +514,7 @@
     background: #2d2d2d;
     color: #cccccc;
     cursor: pointer;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
   }
   .font-btn:hover:not(:disabled) {
     border-color: #007acc;
@@ -609,7 +613,7 @@
     border-radius: 4px;
     border: 1px solid #3c3c3c;
     cursor: pointer;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
     font-size: 13px;
   }
   .modal-btn.cancel {

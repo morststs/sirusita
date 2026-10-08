@@ -74,7 +74,7 @@
     font-size: 20px;
     line-height: 1.5;
     font-weight: bold;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
     border: none;
     outline: none;
     padding: 6px 0;
@@ -96,7 +96,7 @@
     border-radius: 4px;
     padding: 6px 8px;
     font-size: 13px;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
     outline: none;
     background: #3c3c3c;
     color: #cccccc;

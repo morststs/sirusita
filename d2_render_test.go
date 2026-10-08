@@ -6,8 +6,7 @@ import (
 )
 
 func TestRenderD2(t *testing.T) {
-	a := NewApp()
-	svg, err := a.RenderD2("x -> y: hello")
+	svg, err := renderD2("x -> y: hello")
 	if err != nil {
 		t.Fatalf("RenderD2 returned error: %v", err)
 	}
@@ -17,8 +16,7 @@ func TestRenderD2(t *testing.T) {
 }
 
 func TestRenderD2Error(t *testing.T) {
-	a := NewApp()
-	if _, err := a.RenderD2("a -> b {"); err == nil {
+	if _, err := renderD2("a -> b {"); err == nil {
 		t.Fatal("expected error for invalid D2 source, got nil")
 	}
 }

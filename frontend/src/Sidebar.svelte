@@ -1,5 +1,7 @@
 <script>
   import { Accordion, AccordionItem, Modal, Button } from 'flowbite-svelte';
+  import { IS_WEB } from '$backend';
+  import { STORE_URL } from './links.js';
   import { buildTagTree, matchesTag, normalizeTag, allTagPaths, renameTagPath } from './tagTree.js';
 
   let {
@@ -167,6 +169,15 @@
     </AccordionItem>
   </Accordion>
 
+  {#if IS_WEB}
+    <div class="web-note">
+      <p>メモはこのブラウザ内（IndexedDB）にだけ保存されます。サイトデータを消去すると失われるので、必要なメモはエクスポートしてください。</p>
+      {#if STORE_URL}
+        <a href={STORE_URL} target="_blank" rel="noopener noreferrer" title="Microsoft Store を開きます">Windows アプリ版（Microsoft Store） ↗</a>
+      {/if}
+    </div>
+  {/if}
+
   <Modal title="タグ名を変更" bind:open={renameOpen} size="xs">
     <p class="rename-hint">「/」で区切ると階層になります。配下のタグもまとめて変更されます。</p>
     <input
@@ -184,6 +195,19 @@
 </div>
 
 <style>
+  .web-note {
+    margin-top: 16px;
+    padding: 8px;
+    border-top: 1px solid #333333;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #888888;
+  }
+  .web-note a {
+    display: inline-block;
+    margin-top: 6px;
+    color: #4fa3e0;
+  }
   .sidebar-content {
     padding: 12px;
   }
@@ -231,7 +255,7 @@
     cursor: pointer;
     border-radius: 4px;
     font-size: 13px;
-    font-family: "Noto Sans JP", sans-serif;
+    font-family: inherit;
     color: #bbbbbb;
   }
   .tag-item:hover, .note-item:hover {
