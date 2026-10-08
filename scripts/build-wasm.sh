@@ -9,4 +9,17 @@ mkdir -p "$OUT_DIR"
 cd "$ROOT_DIR"
 GOOS=js GOARCH=wasm go build -trimpath -ldflags="-s -w" -o "$OUT_DIR/sirusita.wasm" .
 # wasm_exec.js はビルドに使った Go と同じバージョンのものでなければならない
-cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" "$OUT_DIR/wasm_exec.js"
+GOROOT_DIR="$(go env GOROOT)"
+# Go 1.24 以降は lib/wasm、Go 1.23 以前は misc/wasm にある
+WASM_EXEC=""
+for d in lib/wasm misc/wasm; do
+  if [ -f "$GOROOT_DIR/$d/wasm_exec.js" ]; then
+    WASM_EXEC="$GOROOT_DIR/$d/wasm_exec.js"
+    break
+  fi
+done
+if [ -z "$WASM_EXEC" ]; then
+  echo "error: wasm_exec.js not found under $GOROOT_DIR/lib/wasm or $GOROOT_DIR/misc/wasm" >&2
+  exit 1
+fi
+cp "$WASM_EXEC" "$OUT_DIR/wasm_exec.js"

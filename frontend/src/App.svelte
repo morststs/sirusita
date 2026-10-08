@@ -85,7 +85,8 @@
         showToast('マークダウンファイル (.md) が見つかりませんでした');
       }
     } catch (err) {
-      await refreshList();
+      console.error(err);
+      await refreshList().catch(() => {});
       showToast('インポートに失敗しました');
     }
   }
@@ -243,7 +244,8 @@
         showToast(imported.length + '件のマークダウンをインポートしました');
       }
     } catch (err) {
-      await refreshList();
+      console.error(err);
+      await refreshList().catch(() => {});
       showToast('インポートに失敗しました');
     }
   }

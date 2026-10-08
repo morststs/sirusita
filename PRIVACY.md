@@ -12,7 +12,7 @@ None. Sirusita does not collect, transmit, or share any personal information.
 
 - The application does not communicate with any server operated by the developer or by third parties.
 - It has no user accounts, analytics, advertising, or crash reporting.
-- It does not load external fonts or other resources from the internet.
+- It does not load external fonts, scripts, or other resources from the internet by itself. The only exception is content that you yourself reference in your notes (for example an image written as `![](https://...)`), which is fetched from wherever you point it when the preview is shown.
 
 ### Data stored on your device
 
@@ -36,7 +36,7 @@ Sirusita is also available as a web page at <https://sirusita.e17.click/>.
 - Your notes are stored only in your browser (IndexedDB and localStorage) on your device. They are never sent to any server.
 - D2 diagram rendering and import parsing run entirely inside your browser using WebAssembly.
 - You can delete the data from within the app or by clearing the site data in your browser.
-- The page is hosted on GitHub Pages. When your browser downloads the page, GitHub receives the usual request information (such as your IP address) as part of serving it. The developer has no access to it, and it is governed by the [GitHub Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). The domain name is resolved by Amazon Route 53 (DNS only; no page content passes through it). The page loads nothing from any other domain.
+- The page is hosted on GitHub Pages. When your browser downloads the page, GitHub receives the usual request information (such as your IP address) as part of serving it. The developer has no access to it, and it is governed by the [GitHub Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). The domain name is resolved by Amazon Route 53 (DNS only; no page content passes through it). The page itself loads nothing from any other domain, except resources such as images that you yourself reference in your notes, which are fetched from wherever you point them.
 
 ### Changes to this policy
 
@@ -58,7 +58,7 @@ Sirusitaは、メモをお使いのコンピューター上に保存する、マ
 
 - 開発者や第三者が運用するサーバーとは一切通信しません。
 - ユーザーアカウント、利用状況の解析、広告、クラッシュレポートの機能はありません。
-- 外部フォントなど、インターネット上のリソースを読み込むことはありません。
+- 外部フォントやスクリプトなど、インターネット上のリソースを自ら読み込むことはありません。例外として、利用者自身がメモに書いた画像（例: `![](https://...)`）などは、プレビュー表示の際に指定された場所から取得されます。
 
 ### お使いの端末に保存されるデータ
 
@@ -82,7 +82,7 @@ Sirusitaは <https://sirusita.e17.click/> でWebページとしても利用で�
 - メモは、お使いの端末のブラウザ内（IndexedDBおよびlocalStorage）にのみ保存されます。サーバーへ送信されることはありません。
 - D2図の描画とインポートの解析は、WebAssemblyを使ってすべてブラウザ内で行います。
 - アプリ内の削除操作、またはブラウザのサイトデータの消去により、いつでも消去できます。
-- ページはGitHub Pagesで配信しています。ブラウザがページを読み込む際、配信の過程でGitHubが通常のリクエスト情報（IPアドレスなど）を受け取ります。開発者はこれにアクセスできず、その取り扱いは[GitHub のプライバシーに関する声明](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement)に従います。ドメイン名の解決（DNS）にはAmazon Route 53を使っていますが、ページの内容はそこを経由しません。GitHub以外からは何も読み込みません。
+- ページはGitHub Pagesで配信しています。ブラウザがページを読み込む際、配信の過程でGitHubが通常のリクエスト情報（IPアドレスなど）を受け取ります。開発者はこれにアクセスできず、その取り扱いは[GitHub のプライバシーに関する声明](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement)に従います。ドメイン名の解決（DNS）にはAmazon Route 53を使っていますが、ページの内容はそこを経由しません。ページ自体はGitHub以外からは何も読み込みません（利用者自身がメモ内で参照した画像などは、指定された場所から取得されます）。
 
 ### 本ポリシーの変更
 

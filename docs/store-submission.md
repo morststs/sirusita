@@ -45,7 +45,7 @@ Store ページの URL は `https://apps.microsoft.com/detail/9PPT0S6GKBLW`（�
 - 個人情報: 「いいえ、製品では個人情報を使用しません」
 - Web サイト: `https://github.com/morststs/sirusita`
 - サポートの連絡先情報: `https://github.com/morststs/sirusita/issues`
-- プライバシー ポリシーの URL: `https://sirusita.e17.click/PRIVACY.md`
+- プライバシー ポリシーの URL: `https://github.com/morststs/sirusita/blob/main/PRIVACY.md`（GitHub 上で整形表示される。Pages は .md を text/markdown で配信し、ブラウザによっては表示せずダウンロードされるため。同じファイルは Web 版のビルドにも同梱される）
 - 電話番号・住所: **空欄**（入力すると Store ページで公開される）
 - 表示モード（Mixed Reality）: PC / HoloLens ともにチェックなし
 - 製品の公表: 「代替ドライブやリムーバブル ストレージへのインストール」のみチェック。
@@ -68,6 +68,7 @@ Store ページの URL は `https://apps.microsoft.com/detail/9PPT0S6GKBLW`（�
 
 - `sirusita.msix`（X64, Windows.Desktop min 10.0.22000.0）をアップロードする
 - デバイス ファミリ: Windows 10/11 Desktop のみ。「将来のデバイス ファミリを Microsoft に任せる」は外す
+- 「Windows 10/11 Desktop」は Partner Center 上のデバイス ファミリ名であり、実際のインストール可能範囲はマニフェストの MinVersion（10.0.22000.0）により Windows 11 に限られる
 - アップロード時の警告「restricted capabilities require approval: runFullTrust」は想定どおり
 
 ## Store 登録情報（日本語のみ。追加言語なし）
