@@ -4,6 +4,17 @@ import { normalizeTag, renameTags } from '../tagTree.js';
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
+// 新しいメモの ID（UUID v4）。crypto.randomUUID はセキュアコンテキスト（HTTPS / localhost）でしか
+// 使えないため、HTTP で開かれたときは getRandomValues（どこでも使える）から組み立てる。
+export function newNoteId(c = globalThis.crypto) {
+  if (typeof c.randomUUID === 'function') return c.randomUUID();
+  const b = c.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
 // note_service.go の normalizeTags と同じ（正規化・空除去・重複除去・出現順保持）。
 export function normalizeTags(tags) {
   const out = [];

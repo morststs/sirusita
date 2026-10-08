@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   UUID_RE, normalizeTags, formatRFC3339, buildNote, applyUpdate, toMeta,
-  sortByModifiedDesc, collectTags, planRename, exportMarkdown, sanitizeFilename, exportFilename,
+  sortByModifiedDesc, collectTags, planRename, exportMarkdown, sanitizeFilename, exportFilename, newNoteId,
 } from './noteLogic.js';
 
 const NOW = new Date(2026, 9, 7, 9, 5, 3); // ローカル時刻 2026-10-07 09:05:03
@@ -78,4 +78,18 @@ test('exportMarkdown / exportFilename', () => {
   assert.equal(sanitizeFilename(' a/b:c*?"<>|\td '), 'a-b-c------ d');
   assert.equal(exportFilename(''), 'note.md');
   assert.equal(exportFilename('メモ/1'), 'メモ-1.md');
+});
+
+test('newNoteId: randomUUID が無い（HTTP など非セキュアコンテキスト）ときも UUID v4 を返す', () => {
+  const fill = (a) => { for (let i = 0; i < a.length; i++) a[i] = 0xff; return a; };
+  const id = newNoteId({ getRandomValues: fill });
+  assert.equal(id, 'ffffffff-ffff-4fff-bfff-ffffffffffff');
+  assert.match(id, UUID_RE);
+  const zero = newNoteId({ getRandomValues: (a) => a });
+  assert.equal(zero, '00000000-0000-4000-8000-000000000000');
+});
+
+test('newNoteId: randomUUID があればそれを使う', () => {
+  assert.equal(newNoteId({ randomUUID: () => 'from-native' }), 'from-native');
+  assert.match(newNoteId(globalThis.crypto), UUID_RE);
 });
