@@ -6,6 +6,30 @@ Partner Center（製品「Sirusita」、種類: **MSIX または PWA アプリ**
 
 > 製品の種類は必ず「**MSIX または PWA アプリ**」を選ぶ（後から変更できない）。
 
+## 提出前チェックリスト
+
+Partner Center の申請画面の各項目と、この文書の該当節の対応。上から順に埋める。
+
+| # | Partner Center の項目 | 用意するもの / 入力内容 | 状態 |
+|---|---|---|---|
+| 1 | 製品の作成・名前の予約 | 「Sirusita」 | 済 |
+| 2 | 価格と提供の状況 | [価格と提供の状況](#価格と提供の状況) | |
+| 3 | プロパティ | [プロパティ](#プロパティ)（プライバシー ポリシー URL が必須） | |
+| 4 | 年齢区分 | [年齢区分（IARC）](#年齢区分iarc) | |
+| 5 | パッケージ | `sirusita.msix`（[パッケージ](#パッケージ)） | MSIX 1.5.0 ビルド済み |
+| 6 | Store 登録情報（日本語） | 説明・短い説明・機能・キーワード（[Store 登録情報](#store-登録情報日本語のみ追加言語なし)）、**スクリーンショット 1 枚以上（必須）** | スクリーンショット未作成 |
+| 7 | 申請オプション | runFullTrust の理由（[申請オプション](#申請オプション)） | |
+| 8 | 追加のテスト情報 | [追加のテスト情報](#追加のテスト情報認定の注意書き顧客には非表示) | |
+
+自分で用意する必要があるのは **スクリーンショット**（と任意の Store ロゴ）だけ。他はこの文書からコピーする。
+
+### MSIX の入手場所
+
+- v1.5.0 のビルド: `tmp/sirusita.msix`（ローカル。`tmp/` は gitignore 済み）
+- GitHub から取る場合: Actions の「Build MSIX for Microsoft Store」の実行ページ下部 **Artifacts** の
+  `sirusita-msix` をダウンロード → **zip を展開**すると `sirusita.msix` が出てくる
+  （v1.5.0: https://github.com/morststs/sirusita/actions/runs/37723808587 。Artifact の保存期限は 90 日）
+
 ## 製品 ID（Partner Center「製品 ID の表示」）
 
 | 項目 | 値 |
@@ -25,7 +49,7 @@ Store ページの URL は `https://apps.microsoft.com/detail/9PPT0S6GKBLW`（�
    ```bash
    gh workflow run msix.yml -f version=1.5.0
    gh run list --workflow msix.yml --limit 1      # run-id を確認
-   gh run download <run-id> -n sirusita-msix      # sirusita.msix が手に入る
+   gh run download <run-id> -n sirusita-msix      # 展開済みの sirusita.msix がカレントに出る（ブラウザでは zip を展開）
    ```
 2. Partner Center の「パッケージ」に `sirusita.msix` をアップロードする。
    警告「restricted capabilities require approval: runFullTrust」は想定どおり（下の申請オプションで理由を書く）。
@@ -78,11 +102,10 @@ Store ページの URL は `https://apps.microsoft.com/detail/9PPT0S6GKBLW`（�
 ```
 Sirusita は、マークダウンで書けるシンプルなメモアプリです。
 
-メモはマークダウンで書き、プレビューで確認できます。タグで分類でき、「プログラミング/Go」のように「/」で区切ると階層タグとしてまとめて絞り込めます。タイトルと本文を対象にした全文検索にも対応しています。
+メモはマークダウンで書き、プレビューで確認できます。タグで分類でき、「プログラミング/Go」のように「/」で区切ると階層タグとしてまとめて絞り込めます。
 
 ・数式（KaTeX）、図（Mermaid / D2）、コードのシンタックスハイライトをプレビューに表示
 ・タグと階層タグでの整理、タグ名の一括変更
-・タイトル・本文の全文検索
 ・マークダウンや ZIP のインポート、マークダウンのエクスポート（ドラッグ＆ドロップにも対応）
 ・プレビューの文字サイズ変更と、見出し一覧からのジャンプ
 
@@ -92,7 +115,7 @@ Sirusita は、マークダウンで書けるシンプルなメモアプリで�
 ### 短い説明（推奨 270 文字以下）
 
 ```
-マークダウンで書けるシンプルなメモアプリ。タグ・階層タグでの整理、全文検索、数式や図（Mermaid / D2）のプレビューに対応。オフラインで動作し、メモは PC 内にだけ保存されます。
+マークダウンで書けるシンプルなメモアプリ。タグ・階層タグでの整理、数式や図（Mermaid / D2）のプレビューに対応。オフラインで動作し、メモは PC 内にだけ保存されます。
 ```
 
 ### 製品の機能（10 個以内）
@@ -102,7 +125,6 @@ Sirusita は、マークダウンで書けるシンプルなメモアプリで�
 数式（KaTeX）と図（Mermaid / D2）の表示
 コードのシンタックスハイライト
 タグと階層タグでの整理、タグ名の一括変更
-タイトル・本文の全文検索
 マークダウン / ZIP のインポート（ドラッグ＆ドロップ対応）
 マークダウンのエクスポート
 見出し一覧からのジャンプ、プレビューの文字サイズ変更
@@ -129,12 +151,13 @@ Sirusita は、マークダウンで書けるシンプルなメモアプリで�
 
 ### ロゴ・画像
 
+任意（未設定ならパッケージ内のロゴが使われる）。用意する場合は
 `build/appicon.png` から作る（生成物はリポジトリに含めない）。1:1 ボックス アート（2160×2160）、
 アプリ タイル アイコン（300×300 / 150×150 / 71×71）、必要なら 9:16 ポスター アート（1440×2160）。
 
 ### スクリーンショット
 
-横 1366×縦 768 以上の PNG。アプリの初期ウィンドウより大きい場合は最大化してから撮る。
+**1 枚以上必須**（最大 10 枚）。横 1366×縦 768 以上の PNG。アプリの初期ウィンドウより大きい場合は最大化してから撮る。
 `contents/` のサンプルメモ（数式・Mermaid / D2 の図を含むもの）を開いたプレビューや、
 階層タグのツリーが見える画面が見栄えする。
 
@@ -157,8 +180,7 @@ Sirusita is a Markdown memo app.
 How to test:
 1. Launch the app and click the "new markdown" icon button at the top of the sidebar to create a note. Type Markdown in the editor; the preview shows the rendered result.
 2. Enter tags in the toolbar (comma separated; "a/b" makes a hierarchical tag) and filter by tag in the sidebar.
-3. Use the search box to search titles and bodies.
-4. The import icon button in the sidebar imports Markdown or ZIP files (dropping files onto the window also works); the export button in the toolbar saves the open note as a Markdown file.
+3. The import icon button in the sidebar imports Markdown or ZIP files (dropping files onto the window also works); the export button in the toolbar saves the open note as a Markdown file.
 
 Notes:
 - No account, sign-in, or license key is required. All features are available immediately.
