@@ -393,16 +393,18 @@
   .bar-btn.done {
     margin-left: auto;
   }
-  .note-check {
+  /* 選択モードの行。.note-item（display: block）より詳細度を上げ、チェックとタイトルを 1 行に並べる */
+  .note-item.note-check {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
-  .note-check.checked {
-    background: #37373d;
+  .note-item.note-check.checked {
+    background: #094771;
     color: #ffffff;
   }
   .note-check .note-title {
+    flex: 1;
     min-width: 0;
   }
   .section-body {
