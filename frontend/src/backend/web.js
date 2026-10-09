@@ -7,7 +7,7 @@ import { CreateImported } from './webNotes.js';
 import { callWasm } from './wasm.js';
 import { exportMarkdown, exportFilename } from './noteLogic.js';
 
-export { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag } from './webNotes.js';
+export { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag, EditTags } from './webNotes.js';
 
 export const IS_WEB = true;
 

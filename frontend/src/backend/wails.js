@@ -4,7 +4,7 @@
 import { ImportFiles } from '../../wailsjs/go/main/App';
 import { OnFileDrop, OnFileDropOff, ClipboardSetText } from '../../wailsjs/runtime/runtime';
 
-export { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag } from '../../wailsjs/go/main/NoteService';
+export { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag, EditTags } from '../../wailsjs/go/main/NoteService';
 export { ExportNote, ImportNote, RenderD2, OpenURL } from '../../wailsjs/go/main/App';
 
 // Web 版にだけ出すもの（ブラウザ保存の案内など）の切り替えに使う。

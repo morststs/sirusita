@@ -104,7 +104,8 @@ sirusita/
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
 │   │   ├── monaco.js        # Monaco Editor のスリム構成（エディタ + Markdown + Worker 設定）
 │   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期 + タブ/分割表示切替）
-│   │   ├── Sidebar.svelte   # 新規/インポート/サンプル集/ヘルプ（?）ボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧（選択モードで複数削除）
+│   │   ├── Sidebar.svelte   # 新規/インポート/サンプル集/ヘルプ（?）ボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧（選択モードで複数削除・タグ一括変更）
+│   │   ├── BulkTagModal.svelte # 選んだ複数メモのタグ一括変更（付ける / 外す）のモーダル
 │   │   ├── SampleModal.svelte # サンプル集から追加のモーダル（最初のタグをカテゴリーとしてグループ表示・検索・複数選択して新規メモとして作成）
 │   │   ├── samples.js       # 同梱サンプル集（vite.config.js の `virtual:samples` で contents/*.md を取り込み）
 │   │   ├── HelpModal.svelte # 使い方ヘルプのモーダル（Preview で help.js の本文を表示）
@@ -151,6 +152,7 @@ sirusita/
 | `UpdateNote(id, title, body, tags)` | メモ更新（created 保持） |
 | `DeleteNote(id)` | メモ削除 |
 | `ListTags()` | 全タグ一覧（重複排除、ソート済） |
+| `EditTags(ids, add, remove)` | 選んだメモへタグを一括で追加・削除（remove は完全一致のみ。作成/更新日時は保持）。変わった件数を返す |
 | `RenameTag(old, new)` | タグとその配下（`old/…`）を一括で付け替え。既存タグとは統合。作成/更新日時は保持。更新件数を返す |
 | `SearchNotes(query)` | タイトル・本文の全文検索 |
 

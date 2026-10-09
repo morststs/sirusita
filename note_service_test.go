@@ -212,3 +212,46 @@ func TestRenameTagInvalid(t *testing.T) {
 		t.Errorf("同名リネーム = (%d, %v), want (0, nil)", count, err)
 	}
 }
+
+// EditTags: 完全一致のタグだけ外し、追加は末尾へ（重複は除く）。日時は保持し、変わったメモだけ数える。
+func TestEditTagsAddRemove(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	a := mustCreate(t, svc, "a", "x", "x/y", "keep")
+	b := mustCreate(t, svc, "b", "keep", "new")
+	c := mustCreate(t, svc, "c", "other") // 対象外
+	before := mustGet(t, svc, a)
+
+	count, err := svc.EditTags([]string{a, b}, []string{" new ", "z/ w"}, []string{"x"})
+	if err != nil {
+		t.Fatalf("EditTags: %v", err)
+	}
+	if count != 2 {
+		t.Errorf("count = %d, want 2", count)
+	}
+	checks := map[string][]string{
+		a: {"x/y", "keep", "new", "z/w"},
+		b: {"keep", "new", "z/w"},
+		c: {"other"},
+	}
+	for id, want := range checks {
+		if got := mustGet(t, svc, id).Tags; !reflect.DeepEqual(got, want) {
+			t.Errorf("%s tags = %v, want %v", mustGet(t, svc, id).Title, got, want)
+		}
+	}
+	after := mustGet(t, svc, a)
+	if after.Created != before.Created || after.Modified != before.Modified {
+		t.Errorf("日時が変わった: %s/%s -> %s/%s", before.Created, before.Modified, after.Created, after.Modified)
+	}
+
+	// 変化が無ければ 0 件
+	if count, err := svc.EditTags([]string{b}, []string{"new"}, []string{"absent"}); err != nil || count != 0 {
+		t.Errorf("no-op count = %d, err = %v", count, err)
+	}
+}
+
+func TestEditTagsRejectsInvalidID(t *testing.T) {
+	svc := NewNoteService(t.TempDir())
+	if _, err := svc.EditTags([]string{"../x"}, []string{"a"}, nil); err == nil {
+		t.Error("不正な ID でエラーにならない")
+	}
+}

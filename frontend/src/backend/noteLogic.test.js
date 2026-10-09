@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   UUID_RE, normalizeTags, formatRFC3339, buildNote, applyUpdate, toMeta,
-  sortByModifiedDesc, collectTags, planRename, exportMarkdown, sanitizeFilename, exportFilename, newNoteId,
+  sortByModifiedDesc, collectTags, planRename, planEditTags, exportMarkdown, sanitizeFilename, exportFilename, newNoteId,
 } from './noteLogic.js';
 
 const NOW = new Date(2026, 9, 7, 9, 5, 3); // ローカル時刻 2026-10-07 09:05:03
@@ -92,4 +92,18 @@ test('newNoteId: randomUUID が無い（HTTP など非セキュアコンテキ�
 test('newNoteId: randomUUID があればそれを使う', () => {
   assert.equal(newNoteId({ randomUUID: () => 'from-native' }), 'from-native');
   assert.match(newNoteId(globalThis.crypto), UUID_RE);
+});
+
+test('planEditTags: 完全一致だけ外し、追加は末尾へ。対象外・変化なしは返さない', () => {
+  const notes = [
+    { id: 'a', tags: ['x', 'x/y', 'keep'], created: 'c', modified: 'm' },
+    { id: 'b', tags: ['keep', 'new'] },
+    { id: 'c', tags: ['other'] },
+  ];
+  const changed = planEditTags(notes, ['a', 'b'], [' new ', 'z/ w'], ['x']);
+  assert.deepEqual(changed, [
+    { id: 'a', tags: ['x/y', 'keep', 'new', 'z/w'], created: 'c', modified: 'm' },
+    { id: 'b', tags: ['keep', 'new', 'z/w'] },
+  ]);
+  assert.deepEqual(planEditTags(notes, ['b'], ['new'], ['absent']), []);
 });

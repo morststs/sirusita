@@ -14,6 +14,10 @@ export function DeleteNote(arg1) {
   return window['go']['main']['NoteService']['DeleteNote'](arg1);
 }
 
+export function EditTags(arg1, arg2, arg3) {
+  return window['go']['main']['NoteService']['EditTags'](arg1, arg2, arg3);
+}
+
 export function GetNote(arg1) {
   return window['go']['main']['NoteService']['GetNote'](arg1);
 }

@@ -2,6 +2,7 @@
   import { Modal, Button } from 'flowbite-svelte';
   import { IS_WEB } from '$backend';
   import { STORE_URL } from './links.js';
+  import BulkTagModal from './BulkTagModal.svelte';
   import { buildTagTree, matchesTag, normalizeTag, allTagPaths, renameTagPath } from './tagTree.js';
 
   let {
@@ -16,7 +17,8 @@
     onSelectTag,
     onSelectNote,
     onRenameTag,
-    onDeleteNotes
+    onDeleteNotes,
+    onEditTags
   } = $props();
 
   // 「タグ無し」フィルタ用のセンチネル（実在タグ文字列と衝突しない Symbol）。
@@ -89,6 +91,20 @@
 
   function toggleAllChecked() {
     checkedIds = allChecked ? new Set() : new Set(filteredNotes.map(n => n.id));
+  }
+
+  // 選んだメモのタグをまとめて変更する
+  let bulkTagOpen = $state(false);
+  let bulkTargets = $state([]);
+
+  function openBulkTags() {
+    if (checkedNotes.length === 0) return;
+    bulkTargets = checkedNotes.map(n => ({ id: n.id, title: n.title, tags: n.tags || [] }));
+    bulkTagOpen = true;
+  }
+
+  function applyBulkTags(add, remove) {
+    onEditTags?.(bulkTargets.map(n => n.id), add, remove);
   }
 
   function deleteChecked() {
@@ -216,13 +232,14 @@
           <button class="bar-btn" onclick={toggleAllChecked} disabled={filteredNotes.length === 0}>
             {allChecked ? '全て解除' : '全て選択'}
           </button>
-          <button class="bar-btn danger" onclick={deleteChecked} disabled={checkedNotes.length === 0}>
-            削除（{checkedNotes.length}件）
-          </button>
+          <button class="bar-btn" onclick={openBulkTags} disabled={checkedNotes.length === 0}
+            title="選んだマークダウンのタグをまとめて変更">タグ</button>
+          <button class="bar-btn danger" onclick={deleteChecked} disabled={checkedNotes.length === 0}
+            title="選んだマークダウンを削除">削除（{checkedNotes.length}件）</button>
           <button class="bar-btn done" onclick={stopSelecting}>完了</button>
         {:else}
           <button class="bar-btn" onclick={startSelecting} disabled={filteredNotes.length === 0}
-            title="複数のマークダウンを選んで削除">選択</button>
+            title="複数のマークダウンを選んで、タグの変更や削除をまとめて行う">選択</button>
         {/if}
       </div>
       <div class="section-body note-list">
@@ -253,6 +270,8 @@
       {/if}
     </div>
   {/if}
+
+  <BulkTagModal bind:open={bulkTagOpen} targets={bulkTargets} allTags={tags} onApply={applyBulkTags} />
 
   <Modal title="タグ名を変更" bind:open={renameOpen} size="xs">
     <p class="rename-hint">「/」で区切ると階層になります。配下のタグもまとめて変更されます。</p>
