@@ -6,6 +6,7 @@
   import Preview from './Preview.svelte';
   import Toc from './Toc.svelte';
   import HelpModal from './HelpModal.svelte';
+  import SampleModal from './SampleModal.svelte';
   import { extractHeadings } from './markdown.js';
   import {
     ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag,
@@ -29,6 +30,8 @@
   let showDeleteConfirm = $state(false);
   // 使い方（ヘルプ）の表示状態。
   let showHelp = $state(false);
+  // サンプル集から追加ダイアログの表示状態。
+  let showSamples = $state(false);
   // 本文から抽出した見出し一覧（編集に追従してリアルタイム更新）。
   let headings = $derived(extractHeadings(selectedNote?.body || ''));
   let toastMessage = $state('');
@@ -253,6 +256,29 @@
     }
   }
 
+  // 同梱サンプル（samples.js）を選んだ順に新しいメモとして作る。
+  async function handleAddSamples(picked) {
+    await flushPendingSave();
+    let last = null;
+    let count = 0;
+    try {
+      for (const s of picked) {
+        last = await CreateNote(s.title, s.body, s.tags);
+        count++;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    await refreshList();
+    if (last) {
+      selectedNote = last;
+      navView('preview');
+    }
+    showToast(count === picked.length
+      ? count + '件のサンプルを追加しました'
+      : 'サンプルの追加に失敗しました（' + count + '/' + picked.length + '件追加）');
+  }
+
   async function handleBodyChange(body) {
     if (!selectedNote) return;
     selectedNote.body = body;
@@ -360,6 +386,7 @@
       onSelectTag={handleSelectTag}
       onCreateNote={handleCreateNote}
       onImport={handleImport}
+      onAddSamples={() => showSamples = true}
       onHelp={() => showHelp = true}
       onRenameTag={handleRenameTag} />
   </div>
@@ -442,6 +469,7 @@
 {/if}
 
 <HelpModal bind:open={showHelp} fontSize={previewFontSize} />
+<SampleModal bind:open={showSamples} existingTitles={notes.map(n => n.title)} onAdd={handleAddSamples} />
 
 {#if toastMessage}
   <div class="toast">{toastMessage}</div>

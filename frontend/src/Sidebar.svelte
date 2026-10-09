@@ -1,5 +1,5 @@
 <script>
-  import { Accordion, AccordionItem, Modal, Button } from 'flowbite-svelte';
+  import { Modal, Button } from 'flowbite-svelte';
   import { IS_WEB } from '$backend';
   import { STORE_URL } from './links.js';
   import { buildTagTree, matchesTag, normalizeTag, allTagPaths, renameTagPath } from './tagTree.js';
@@ -11,6 +11,7 @@
     selectedNote = null,
     onCreateNote,
     onImport,
+    onAddSamples,
     onHelp,
     onSelectTag,
     onSelectNote,
@@ -47,6 +48,10 @@
     expanded = next;
     saveExpanded(next);
   }
+
+  // 「タグフィルタ」「マークダウン一覧」の開閉。それぞれの中身は個別にスクロールする。
+  let tagsOpen = $state(true);
+  let notesOpen = $state(true);
 
   let tagTree = $derived(buildTagTree(tags, notes));
 
@@ -131,13 +136,21 @@
         <path d="M3 15v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </button>
+    <button class="sample-btn" onclick={() => onAddSamples?.()} title="サンプル集から追加" aria-label="サンプル集から追加">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 4a1 1 0 0 1 1-1h4a2 2 0 0 1 2 2v12a1.5 1.5 0 0 0-1.5-1.5H4a1 1 0 0 1-1-1V4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M17 4a1 1 0 0 0-1-1h-4a2 2 0 0 0-2 2v12a1.5 1.5 0 0 1 1.5-1.5H16a1 1 0 0 0 1-1V4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    </button>
     <button class="help-btn" onclick={() => onHelp?.()} title="使い方（ヘルプ）" aria-label="使い方（ヘルプ）">?</button>
   </div>
 
-  <Accordion multiple flush class="accordion-menu">
-    <AccordionItem open>
-      {#snippet header()}タグフィルタ{/snippet}
-      <div class="tag-list">
+  <section class="side-section tags-section" class:open={tagsOpen} class:shared={notesOpen}>
+    <button class="section-header" onclick={() => (tagsOpen = !tagsOpen)} aria-expanded={tagsOpen}>
+      <span class="section-caret">{tagsOpen ? '▾' : '▸'}</span>タグフィルタ
+    </button>
+    {#if tagsOpen}
+      <div class="section-body tag-list">
         <button
           class="tag-item"
           class:active={selectedTag === null}
@@ -154,11 +167,15 @@
           {@render tagNode(node, 0)}
         {/each}
       </div>
-    </AccordionItem>
+    {/if}
+  </section>
 
-    <AccordionItem open>
-      {#snippet header()}マークダウン一覧{/snippet}
-      <div class="note-list">
+  <section class="side-section notes-section" class:open={notesOpen}>
+    <button class="section-header" onclick={() => (notesOpen = !notesOpen)} aria-expanded={notesOpen}>
+      <span class="section-caret">{notesOpen ? '▾' : '▸'}</span>マークダウン一覧
+    </button>
+    {#if notesOpen}
+      <div class="section-body note-list">
         {#each filteredNotes as note}
           <button
             class="note-item"
@@ -168,8 +185,8 @@
           </button>
         {/each}
       </div>
-    </AccordionItem>
-  </Accordion>
+    {/if}
+  </section>
 
   {#if IS_WEB}
     <div class="web-note">
@@ -198,7 +215,8 @@
 
 <style>
   .web-note {
-    margin-top: 16px;
+    flex: none;
+    margin-top: 8px;
     padding: 8px;
     border-top: 1px solid #333333;
     font-size: 11px;
@@ -210,15 +228,67 @@
     margin-top: 6px;
     color: #4fa3e0;
   }
+  /* ボタン列は固定し、タグフィルタとマークダウン一覧はそれぞれの中だけでスクロールする */
   .sidebar-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     padding: 12px;
   }
   .sidebar-actions {
+    flex: none;
     display: flex;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
-  .new-note-btn, .import-btn, .help-btn {
+  .side-section {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-bottom: 1px solid #333333;
+  }
+  /* 両方開いているときはタグを最大 40% にし、残りを一覧に使う */
+  .tags-section.open {
+    flex: 0 1 auto;
+  }
+  .tags-section.open.shared {
+    max-height: 40%;
+  }
+  .notes-section.open {
+    flex: 1 1 0;
+  }
+  .section-header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 4px;
+    border: none;
+    background: none;
+    color: #cccccc;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .section-header:hover {
+    color: #ffffff;
+  }
+  .section-caret {
+    width: 12px;
+    font-size: 11px;
+    color: #888888;
+  }
+  .section-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .new-note-btn, .import-btn, .sample-btn, .help-btn {
     width: 36px;
     height: 36px;
     padding: 0;
@@ -236,7 +306,7 @@
   .new-note-btn:hover {
     background: #1177bb;
   }
-  .import-btn, .help-btn {
+  .import-btn, .sample-btn, .help-btn {
     background: #3c3c3c;
     color: #cccccc;
   }
@@ -245,7 +315,7 @@
     font-size: 18px;
     font-weight: bold;
   }
-  .import-btn:hover, .help-btn:hover {
+  .import-btn:hover, .sample-btn:hover, .help-btn:hover {
     background: #4a4a4a;
     color: #ffffff;
   }

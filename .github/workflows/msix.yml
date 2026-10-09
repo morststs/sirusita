@@ -70,6 +70,8 @@ jobs:
 
       - name: Build Windows binary
         shell: bash
+        env:
+          SIRUSITA_VERSION: v${{ steps.version.outputs.msix_version }}
         run: wails build -platform windows/amd64
 
       # frontend/dist は上の build で生成されるので、テストはその後に実行する。
