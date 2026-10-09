@@ -72,6 +72,25 @@ export function RenderD2(source) {
   return callWasm('RenderD2', [source]);
 }
 
+// クリップボードへテキストをコピーする。navigator.clipboard は HTTPS（安全なコンテキスト）でしか
+// 使えないので、HTTP で開いたときは選択 + execCommand('copy') で代用する。
+export async function CopyText(text) {
+  if (window.isSecureContext && navigator.clipboard) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  const ok = document.execCommand('copy');
+  ta.remove();
+  if (!ok) throw new Error('clipboard');
+}
+
 export async function OpenURL(url) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
