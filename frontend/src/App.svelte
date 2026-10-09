@@ -9,7 +9,7 @@
   import SampleModal from './SampleModal.svelte';
   import { extractHeadings } from './markdown.js';
   import {
-    ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag,
+    ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag, EditTags,
     ExportNote, ImportNote, OnImportDrop, OffImportDrop,
   } from '$backend';
   import { renameTagPath, renameTags, allTagPaths } from './tagTree.js';
@@ -227,6 +227,27 @@
     }
   }
 
+  // サイドバーで複数選択したメモのタグをまとめて変更する（作成/更新日時は保持）。
+  async function handleEditTags(ids, add, remove) {
+    await flushPendingSave();
+    try {
+      const count = await EditTags(ids, add, remove);
+      // 開いているメモが対象なら、タグだけディスクから読み直す（本文の編集は保存済み）
+      if (selectedNote && ids.includes(selectedNote.id)) {
+        const id = selectedNote.id;
+        const fresh = await GetNote(id);
+        if (selectedNote && selectedNote.id === id) selectedNote.tags = fresh.tags;
+      }
+      await refreshList();
+      if (typeof selectedTag === 'string' && !allTagPaths(tags).has(selectedTag)) selectedTag = null;
+      showToast(count + '件のマークダウンのタグを変更しました');
+    } catch (err) {
+      console.error(err);
+      await refreshList();
+      showToast('タグの変更に失敗しました');
+    }
+  }
+
   async function handleCreateNote() {
     await flushPendingSave();
     try {
@@ -403,7 +424,8 @@
       onAddSamples={() => showSamples = true}
       onHelp={() => showHelp = true}
       onRenameTag={handleRenameTag}
-      onDeleteNotes={handleDeleteNotes} />
+      onDeleteNotes={handleDeleteNotes}
+      onEditTags={handleEditTags} />
   </div>
   <div class="splitter" class:active={dragging} onmousedown={startDrag} title="ドラッグで幅を調整"></div>
   <div class="main-area">

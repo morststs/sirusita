@@ -82,6 +82,24 @@ export function planRename(notes, oldTag, newTag) {
   return changed;
 }
 
+// EditTags 相当。ids のメモから remove（完全一致）を外し、add を末尾に足す。
+// タグが変わるメモだけを（日時・本文はそのまま）新しい値で返す。
+export function planEditTags(notes, ids, add, remove) {
+  const idSet = new Set(ids);
+  const adding = normalizeTags(add);
+  const removing = new Set(normalizeTags(remove));
+  const changed = [];
+  for (const note of notes) {
+    if (!idSet.has(note.id)) continue;
+    const tags = normalizeTags(note.tags);
+    const edited = normalizeTags([...tags.filter(t => !removing.has(t)), ...adding]);
+    if (edited.length !== tags.length || edited.some((t, i) => t !== tags[i])) {
+      changed.push({ ...note, tags: edited });
+    }
+  }
+  return changed;
+}
+
 // app.go の ExportNote と同じ本文（タイトルを H1 として付け、末尾は改行）。
 export function exportMarkdown(title, body) {
   let s = '';

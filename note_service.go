@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -259,6 +260,44 @@ func (s *NoteService) RenameTag(oldTag, newTag string) (int, error) {
 		note.Tags = normalizeTags(renamed)
 		if err := s.writeNote(note); err != nil {
 			return count, fmt.Errorf("failed to rename tag: %w", err)
+		}
+		count++
+	}
+	return count, nil
+}
+
+// EditTags は指定したメモへタグを一括で追加・削除する（サイドバーの複数選択から使う）。
+// remove は完全一致のタグだけを外し（配下のタグは残す）、その後 add を末尾に足す。
+// RenameTag と同じく作成/更新日時は保持する。タグが変わったメモの件数を返す。
+func (s *NoteService) EditTags(ids []string, add []string, remove []string) (int, error) {
+	add = normalizeTags(add)
+	removeSet := make(map[string]bool)
+	for _, tag := range normalizeTags(remove) {
+		removeSet[tag] = true
+	}
+	count := 0
+	for _, id := range ids {
+		if !isValidNoteID(id) {
+			return count, fmt.Errorf("invalid note ID: %s", id)
+		}
+		note, err := s.GetNote(id)
+		if err != nil {
+			return count, err
+		}
+		before := normalizeTags(note.Tags)
+		var kept []string
+		for _, tag := range before {
+			if !removeSet[tag] {
+				kept = append(kept, tag)
+			}
+		}
+		after := normalizeTags(append(kept, add...))
+		if reflect.DeepEqual(after, before) {
+			continue
+		}
+		note.Tags = after
+		if err := s.writeNote(note); err != nil {
+			return count, fmt.Errorf("failed to edit tags: %w", err)
 		}
 		count++
 	}

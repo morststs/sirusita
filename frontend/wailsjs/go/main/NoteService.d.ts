@@ -8,6 +8,8 @@ export function CreateNote(arg1:string,arg2:string,arg3:Array<string>):Promise<m
 
 export function DeleteNote(arg1:string):Promise<void>;
 
+export function EditTags(arg1:Array<string>,arg2:Array<string>,arg3:Array<string>):Promise<number>;
+
 export function GetNote(arg1:string):Promise<main.Note>;
 
 export function ListNotes():Promise<Array<main.NoteMeta>>;

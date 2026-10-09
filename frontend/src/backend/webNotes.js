@@ -2,7 +2,7 @@
 // localStorage は容量が約 5MB しかなく、メモ本文を丸ごと置くと溢れるため使わない。
 // 振る舞いは noteLogic.js（= note_service.go と同じ規則）に従う。
 import {
-  UUID_RE, newNoteId, normalizeTags, buildNote, applyUpdate, toMeta, sortByModifiedDesc, collectTags, planRename,
+  UUID_RE, newNoteId, normalizeTags, buildNote, applyUpdate, toMeta, sortByModifiedDesc, collectTags, planRename, planEditTags,
 } from './noteLogic.js';
 
 const DB_NAME = 'sirusita';
@@ -91,6 +91,19 @@ export async function DeleteNote(id) {
 
 export async function ListTags() {
   return collectTags(await allNotes());
+}
+
+export async function EditTags(ids, add, remove) {
+  for (const id of ids) {
+    if (!UUID_RE.test(id)) throw new Error('invalid note ID: ' + id);
+  }
+  const changed = planEditTags(await allNotes(), ids, add, remove);
+  if (changed.length > 0) {
+    await run('readwrite', (s) => {
+      for (const note of changed) s.put(note);
+    });
+  }
+  return changed.length;
 }
 
 export async function RenameTag(oldTag, newTag) {
