@@ -34,7 +34,8 @@ html, body {
   display: flex;
   flex-direction: column;
   background: #252526;
-  overflow-y: auto;
+  /* スクロールは Sidebar.svelte の各セクション内で行う（ボタン列は固定） */
+  overflow: hidden;
 }
 
 .main-area {

@@ -39,6 +39,8 @@ jobs:
 
       - name: Build Windows binary
         shell: bash
+        env:
+          SIRUSITA_VERSION: ${{ github.event.inputs.tag || github.ref_name }}
         run: wails build -platform windows/amd64
 
       # exe が大きいため zip 化して添付する。ライセンス表示物（LICENSE /

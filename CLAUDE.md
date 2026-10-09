@@ -95,7 +95,7 @@ sirusita/
 │   └── pages.yml            # main push で Web 版をビルドし GitHub Pages へ公開
 ├── frontend/
 │   ├── svelte.config.js     # vitePreprocess({ script: true })（後述の「ビルド注意点」参照）
-│   ├── vite.config.js       # Vite + svelte + @tailwindcss/vite
+│   ├── vite.config.js       # Vite + svelte + @tailwindcss/vite + samplesPlugin（contents/ を virtual:samples に）
 │   ├── src/
 │   │   ├── main.js          # Svelte マウント
 │   │   ├── links.js         # 外部への案内リンク（STORE_URL。空のあいだ非表示）
@@ -104,10 +104,12 @@ sirusita/
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
 │   │   ├── monaco.js        # Monaco Editor のスリム構成（エディタ + Markdown + Worker 設定）
 │   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期 + タブ/分割表示切替）
-│   │   ├── Sidebar.svelte   # 新規/インポート/ヘルプ（?）ボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧
+│   │   ├── Sidebar.svelte   # 新規/インポート/サンプル集/ヘルプ（?）ボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧
+│   │   ├── SampleModal.svelte # サンプル集から追加のモーダル（検索・複数選択して新規メモとして作成）
+│   │   ├── samples.js       # 同梱サンプル集（vite.config.js の `virtual:samples` で contents/*.md を取り込み）
 │   │   ├── HelpModal.svelte # 使い方ヘルプのモーダル（Preview で help.js の本文を表示）
 │   │   ├── help.js          # ヘルプ本文。contents/Sirusita の使い方.md を `?raw` で取り込み front matter を除く
-│   │   ├── frontMatter.js   # front matter の除去（node --test でテスト）
+│   │   ├── frontMatter.js   # front matter の除去・title/tags の取り出し（node --test でテスト）
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン
 │   │   ├── Editor.svelte    # Monaco Editor によるマークダウン編集（スクロール位置を親へ通知）
 │   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画）
@@ -116,6 +118,8 @@ sirusita/
 │   └── wailsjs/             # Wails 自動生成バインディング（編集不可・ビルド時に再生成）
 ├── contents/                # 配布用サンプルメモ集（題名がそのままファイル名。
 │                            #   sirusita 形式。release で別 ZIP として配布）
+│                            #   アプリにも同梱し「サンプル集から追加」で選んで追加できる
+│                            #   （import.meta.glob は「C#」の # で壊れるため samplesPlugin で読む）
 │                            #   「Sirusita の使い方.md」はアプリ内ヘルプの本文も兼ねる
 │                            #   （```d2 ブロックは contents_test.go が全て描画できるか検証）
 ├── build/bin/               # ビルド出力先（sirusita / sirusita.exe）
@@ -219,6 +223,9 @@ script トランスパイルを明示することで取り込めるようにし�
   PowerShell の `Compress-Archive` を使用。
 - 同じワークフローで `contents/*.md` を `sirusita-contents.zip` に固めて **exe とは別の ZIP**
   として Release に添付する。利用者はアプリの「インポート」からこの ZIP をそのまま取り込める。
+- ヘルプのフッターにバージョンを表示する。`vite.config.js` が `SIRUSITA_VERSION`（release.yml / msix.yml が
+  タグ名を渡す）→ `git describe --tags --always` → `dev` の順で決め、`__APP_VERSION__` として埋め込む
+  （pages.yml は `fetch-depth: 0` で履歴とタグを取得し `v1.5.0-3-gabc1234` のようになる）。
 - CI のフロントエンドビルドも `frontend/svelte.config.js` に依存しているため、コミット必須。
 - `v*` タグの push では release.yml と msix.yml が同時に動く（MSIX は Artifact に置かれるだけ）。
 

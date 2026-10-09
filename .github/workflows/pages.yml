@@ -25,6 +25,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        # ヘルプのバージョン表示（git describe）にタグと履歴が要る
+        with:
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v7
