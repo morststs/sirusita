@@ -104,7 +104,10 @@ sirusita/
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
 │   │   ├── monaco.js        # Monaco Editor のスリム構成（エディタ + Markdown + Worker 設定）
 │   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期 + タブ/分割表示切替）
-│   │   ├── Sidebar.svelte   # 新規/インポートボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧
+│   │   ├── Sidebar.svelte   # 新規/インポート/ヘルプ（?）ボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧
+│   │   ├── HelpModal.svelte # 使い方ヘルプのモーダル（Preview で help.js の本文を表示）
+│   │   ├── help.js          # ヘルプ本文。contents/Sirusita の使い方.md を `?raw` で取り込み front matter を除く
+│   │   ├── frontMatter.js   # front matter の除去（node --test でテスト）
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン
 │   │   ├── Editor.svelte    # Monaco Editor によるマークダウン編集（スクロール位置を親へ通知）
 │   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画）
@@ -113,6 +116,8 @@ sirusita/
 │   └── wailsjs/             # Wails 自動生成バインディング（編集不可・ビルド時に再生成）
 ├── contents/                # 配布用サンプルメモ集（題名がそのままファイル名。
 │                            #   sirusita 形式。release で別 ZIP として配布）
+│                            #   「Sirusita の使い方.md」はアプリ内ヘルプの本文も兼ねる
+│                            #   （```d2 ブロックは contents_test.go が全て描画できるか検証）
 ├── build/bin/               # ビルド出力先（sirusita / sirusita.exe）
 ├── LICENSE                  # MIT
 └── THIRD_PARTY_LICENSES.md
@@ -182,8 +187,8 @@ docker run --rm -v "$PWD":/app -w /app wails-dev wails build
 # Windows ビルド（出力: build/bin/sirusita.exe）
 docker run --rm -v "$PWD":/app -w /app wails-dev wails build -platform windows/amd64
 
-# フロントの純粋関数テスト（tagTree.js）
-docker run --rm -v "$PWD":/app -w /app wails-dev node --test frontend/src/tagTree.test.js
+# フロントの純粋関数テスト（tagTree.js / frontMatter.js）
+docker run --rm -v "$PWD":/app -w /app wails-dev node --test frontend/src/tagTree.test.js frontend/src/frontMatter.test.js
 
 # Web 版のビルド（出力: frontend/dist-web。wasm のビルド込み）
 docker run --rm -v "$PWD":/app -w /app/frontend wails-dev npm run build:web

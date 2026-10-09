@@ -11,6 +11,7 @@
     selectedNote = null,
     onCreateNote,
     onImport,
+    onHelp,
     onSelectTag,
     onSelectNote,
     onRenameTag
@@ -130,6 +131,7 @@
         <path d="M3 15v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </button>
+    <button class="help-btn" onclick={() => onHelp?.()} title="使い方（ヘルプ）" aria-label="使い方（ヘルプ）">?</button>
   </div>
 
   <Accordion multiple flush class="accordion-menu">
@@ -216,7 +218,7 @@
     gap: 8px;
     margin-bottom: 16px;
   }
-  .new-note-btn, .import-btn {
+  .new-note-btn, .import-btn, .help-btn {
     width: 36px;
     height: 36px;
     padding: 0;
@@ -234,11 +236,16 @@
   .new-note-btn:hover {
     background: #1177bb;
   }
-  .import-btn {
+  .import-btn, .help-btn {
     background: #3c3c3c;
     color: #cccccc;
   }
-  .import-btn:hover {
+  .help-btn {
+    margin-left: auto;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .import-btn:hover, .help-btn:hover {
     background: #4a4a4a;
     color: #ffffff;
   }

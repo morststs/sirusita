@@ -16,6 +16,12 @@ export default defineConfig(({mode}) => {
         $backend: fileURLToPath(new URL(web ? './src/backend/web.js' : './src/backend/wails.js', import.meta.url)),
       },
     },
+    // ヘルプ（src/help.js）がリポジトリ直下の contents/ を取り込むため、開発サーバーにも許可する
+    server: {
+      fs: {
+        allow: ['.', '../contents'],
+      },
+    },
     build: {
       // Wails が go:embed する frontend/dist を上書きしないよう出力先を分ける
       outDir: web ? 'dist-web' : 'dist',
