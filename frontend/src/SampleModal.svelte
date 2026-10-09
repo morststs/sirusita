@@ -95,6 +95,9 @@
     color: #ffffff;
     font-size: 13px;
   }
+  .search::placeholder {
+    color: #888888;
+  }
   .search:focus {
     outline: none;
     border-color: #0e639c;
