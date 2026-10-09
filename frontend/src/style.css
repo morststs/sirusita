@@ -18,6 +18,18 @@
   --color-primary-800: #0b4f7d;
   --color-primary-900: #093f63;
   --color-primary-950: #062a42;
+
+  /* flowbite 4 のフォーム部品（チェックボックスなど）が使う色。未定義だとチェック時の背景が
+     文字色（白っぽい灰色）になり、白いチェックマークが見えずチェックしていないように見える。 */
+  --color-brand: #1177bb;
+  --color-default: #6b6b6b;
+}
+
+/* チェックボックスは暗い背景に合わせる（チェック時の背景・枠は flowbite 側の !important が優先） */
+[type='checkbox'] {
+  background-color: #2d2d2d;
+  border-radius: 3px;
+  cursor: pointer;
 }
 
 /* リセットは base レイヤーに置く。レイヤー外に書くと Tailwind のユーティリティ（@layer utilities）より
