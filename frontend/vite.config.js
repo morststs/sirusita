@@ -56,7 +56,7 @@ export default defineConfig(({mode}) => {
         $backend: fileURLToPath(new URL(web ? './src/backend/web.js' : './src/backend/wails.js', import.meta.url)),
       },
     },
-    // ヘルプ（src/help.js）がリポジトリ直下の contents/ を取り込むため、開発サーバーにも許可する
+    // サンプル集（samplesPlugin）がリポジトリ直下の contents/ を読むため、開発サーバーにも許可する
     server: {
       fs: {
         allow: ['.', '../contents'],

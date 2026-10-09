@@ -1,10 +1,5 @@
-// マークダウン先頭の YAML front matter（--- で囲んだ部分）を取り除く。
-// ヘルプ表示で contents/ のメモをそのまま本文として見せるために使う。
+// マークダウン先頭の YAML front matter（--- で囲んだ部分）と直後の空行。
 const FRONT_MATTER_RE = /^---\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)(?:[ \t]*\r?\n)*/;
-
-export function stripFrontMatter(md) {
-  return md.replace(FRONT_MATTER_RE, '');
-}
 
 // YAML のスカラー値を文字列にする。"..." は Go の %q（JSON とほぼ同じエスケープ）で書かれている。
 function unquote(v) {

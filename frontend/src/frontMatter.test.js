@@ -1,23 +1,18 @@
 // node --test frontend/src/frontMatter.test.js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stripFrontMatter, parseFrontMatter } from './frontMatter.js';
+import { parseFrontMatter } from './frontMatter.js';
 
-test('stripFrontMatter: 先頭の front matter と直後の空行を除く', () => {
-  const md = '---\ntitle: "a"\ntags:\n  - "x"\n---\n\n## 見出し\n本文\n';
-  assert.equal(stripFrontMatter(md), '## 見出し\n本文\n');
+test('parseFrontMatter: CRLF でも本文を取り出す', () => {
+  assert.deepEqual(parseFrontMatter('---\r\ntitle: "a"\r\n---\r\n本文'), { title: 'a', tags: [], body: '本文' });
 });
 
-test('stripFrontMatter: CRLF でも除く', () => {
-  assert.equal(stripFrontMatter('---\r\ntitle: "a"\r\n---\r\n本文'), '本文');
+test('parseFrontMatter: 先頭以外の --- は front matter とみなさない', () => {
+  assert.equal(parseFrontMatter('## 見出し\n---\n本文').body, '## 見出し\n---\n本文');
 });
 
-test('stripFrontMatter: front matter が無ければそのまま', () => {
-  assert.equal(stripFrontMatter('## 見出し\n---\n本文'), '## 見出し\n---\n本文');
-});
-
-test('stripFrontMatter: 閉じが無ければそのまま', () => {
-  assert.equal(stripFrontMatter('---\ntitle: "a"\n本文'), '---\ntitle: "a"\n本文');
+test('parseFrontMatter: 閉じが無ければ全文を本文にする', () => {
+  assert.equal(parseFrontMatter('---\ntitle: "a"\n本文').body, '---\ntitle: "a"\n本文');
 });
 
 test('parseFrontMatter: title / tags / 本文を取り出す', () => {

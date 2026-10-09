@@ -6,7 +6,7 @@
   let { open = $bindable(false), fontSize = 15 } = $props();
 </script>
 
-<!-- 使い方（contents/ の「Sirusita の使い方」）を読み取り専用のプレビューで表示する。
+<!-- 使い方（help.md）を読み取り専用のプレビューで表示する。
      ウィンドウいっぱい近くまで広げ、本文だけをスクロールさせる。 -->
 <Modal title={HELP_TITLE} bind:open size="none"
   class="help-modal w-[94vw] h-[92vh] max-w-none max-h-none"

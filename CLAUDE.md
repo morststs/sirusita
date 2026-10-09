@@ -104,12 +104,13 @@ sirusita/
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
 │   │   ├── monaco.js        # Monaco Editor のスリム構成（エディタ + Markdown + Worker 設定）
 │   │   ├── App.svelte       # ルート（状態管理 + Wails統合 + スプリッター + Import/Export + スクロール同期 + タブ/分割表示切替）
-│   │   ├── Sidebar.svelte   # 新規/インポート/サンプル集/ヘルプ（?）ボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧
-│   │   ├── SampleModal.svelte # サンプル集から追加のモーダル（検索・複数選択して新規メモとして作成）
+│   │   ├── Sidebar.svelte   # 新規/インポート/サンプル集/ヘルプ（?）ボタン + 階層タグツリー（開閉・件数・タグ名変更）+ メモ一覧（選択モードで複数削除）
+│   │   ├── SampleModal.svelte # サンプル集から追加のモーダル（最初のタグをカテゴリーとしてグループ表示・検索・複数選択して新規メモとして作成）
 │   │   ├── samples.js       # 同梱サンプル集（vite.config.js の `virtual:samples` で contents/*.md を取り込み）
 │   │   ├── HelpModal.svelte # 使い方ヘルプのモーダル（Preview で help.js の本文を表示）
-│   │   ├── help.js          # ヘルプ本文。contents/Sirusita の使い方.md を `?raw` で取り込み front matter を除く
-│   │   ├── frontMatter.js   # front matter の除去・title/tags の取り出し（node --test でテスト）
+│   │   ├── help.js          # ヘルプ本文（help.md を `?raw` で取り込み）とバージョン（__APP_VERSION__）
+│   │   ├── help.md          # アプリ内ヘルプの本文（```d2 ブロックは contents_test.go が描画できるか検証）
+│   │   ├── frontMatter.js   # front matter から title/tags/本文を取り出す（node --test でテスト）
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン
 │   │   ├── Editor.svelte    # Monaco Editor によるマークダウン編集（スクロール位置を親へ通知）
 │   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画・コードブロックのコピーボタン（$backend の CopyText））
@@ -120,8 +121,7 @@ sirusita/
 │                            #   sirusita 形式。release で別 ZIP として配布）
 │                            #   アプリにも同梱し「サンプル集から追加」で選んで追加できる
 │                            #   （import.meta.glob は「C#」の # で壊れるため samplesPlugin で読む）
-│                            #   「Sirusita の使い方.md」はアプリ内ヘルプの本文も兼ねる
-│                            #   （```d2 ブロックは contents_test.go が全て描画できるか検証）
+│                            #   （```d2 ブロックは contents_test.go が全て描画できるか検証。ヘルプは含めない）
 ├── build/bin/               # ビルド出力先（sirusita / sirusita.exe）
 ├── LICENSE                  # MIT
 └── THIRD_PARTY_LICENSES.md
