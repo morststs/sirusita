@@ -5,6 +5,7 @@
   import Editor from './Editor.svelte';
   import Preview from './Preview.svelte';
   import Toc from './Toc.svelte';
+  import HelpModal from './HelpModal.svelte';
   import { extractHeadings } from './markdown.js';
   import {
     ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag,
@@ -26,6 +27,8 @@
   let showToc = $state(false);
   // 削除確認ダイアログの表示状態。
   let showDeleteConfirm = $state(false);
+  // 使い方（ヘルプ）の表示状態。
+  let showHelp = $state(false);
   // 本文から抽出した見出し一覧（編集に追従してリアルタイム更新）。
   let headings = $derived(extractHeadings(selectedNote?.body || ''));
   let toastMessage = $state('');
@@ -357,6 +360,7 @@
       onSelectTag={handleSelectTag}
       onCreateNote={handleCreateNote}
       onImport={handleImport}
+      onHelp={() => showHelp = true}
       onRenameTag={handleRenameTag} />
   </div>
   <div class="splitter" class:active={dragging} onmousedown={startDrag} title="ドラッグで幅を調整"></div>
@@ -413,7 +417,10 @@
         {/if}
       </div>
     {:else}
-      <div class="empty-state">マークダウンを選択または新規作成してください</div>
+      <div class="empty-state">
+        <p>マークダウンを選択または新規作成してください</p>
+        <p class="empty-hint">使い方はサイドバー上部の「?」から確認できます</p>
+      </div>
     {/if}
   </div>
 </div>
@@ -433,6 +440,8 @@
     </div>
   </div>
 {/if}
+
+<HelpModal bind:open={showHelp} fontSize={previewFontSize} />
 
 {#if toastMessage}
   <div class="toast">{toastMessage}</div>
@@ -554,11 +563,19 @@
   }
   .empty-state {
     display: flex;
+    flex-direction: column;
+    gap: 8px;
     align-items: center;
     justify-content: center;
     height: 100%;
     color: #6a6a6a;
     font-size: 16px;
+  }
+  .empty-state p {
+    margin: 0;
+  }
+  .empty-hint {
+    font-size: 13px;
   }
   .toast {
     position: fixed;

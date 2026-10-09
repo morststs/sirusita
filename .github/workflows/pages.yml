@@ -48,7 +48,7 @@ jobs:
         run: npm ci
 
       - name: Unit tests (JS)
-        run: node --test frontend/src/tagTree.test.js frontend/src/backend/noteLogic.test.js
+        run: node --test frontend/src/tagTree.test.js frontend/src/frontMatter.test.js frontend/src/backend/noteLogic.test.js
 
       - name: Build web
         working-directory: frontend

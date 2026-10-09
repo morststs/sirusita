@@ -4,7 +4,7 @@ tags:
   - "Markdown"
   - "図表"
 created: 2026-06-15T21:26:39+09:00
-modified: 2026-06-15T22:22:54+09:00
+modified: 2026-10-09T10:00:00+09:00
 sirusita: "1"
 ---
 
@@ -55,8 +55,25 @@ sequenceDiagram
 
 * **`classDiagram`**：システムの構造を表すクラス図の宣言
 * **`class <クラス名>`**：クラスの定義
-* **`<型> <変数名>` / `<関数名>()**`：プロティやメソッドの定義
-* **`<--` / `*--` / `o--**`：継承・コンポジション・集約などの関係性の表現
+* **`<型> <変数名>` / `<関数名>()`**：プロパティやメソッドの定義
+* **`<|--` / `*--` / `o--`**：継承・コンポジション・集約などの関係性の表現
+
+```mermaid
+classDiagram
+    class Note {
+        string id
+        string title
+        List~string~ tags
+        save()
+    }
+    class Tag {
+        string path
+        rename(newPath)
+    }
+    class ImportedNote
+    Note <|-- ImportedNote
+    Note o-- Tag
+```
 
 ---
 
@@ -67,6 +84,18 @@ sequenceDiagram
 * **`section <セクション名>`**：タスクのグループ分け
 * **`<タスク名> : <ステータス>, <開始日>, <期間>`**：スケジュールの具体的な記述
 
+```mermaid
+gantt
+    title リリース計画
+    dateFormat YYYY-MM-DD
+    section 開発
+    設計       :done,    d1, 2026-10-01, 3d
+    実装       :active,  d2, after d1, 5d
+    section 公開
+    テスト     :         d3, after d2, 3d
+    リリース   :milestone, after d3, 0d
+```
+
 ---
 
 ## 6. その他の便利なグラフ
@@ -74,3 +103,47 @@ sequenceDiagram
 * **`gitGraph`**：Gitのブランチやコミットの履歴の可視化
 * **`pie`**：円グラフによる割合の表現
 * **`mindmap`**：アイデアの整理に便利なマインドマップの作成
+* **`stateDiagram-v2`**：状態と遷移を表す状態遷移図
+
+```mermaid
+gitGraph
+    commit
+    branch feature
+    checkout feature
+    commit
+    commit
+    checkout main
+    merge feature
+    commit
+```
+
+```mermaid
+pie title メモのタグ内訳
+    "プログラミング" : 14
+    "コマンド" : 11
+    "図表" : 6
+    "その他" : 8
+```
+
+```mermaid
+mindmap
+  root((Sirusita))
+    書く
+      マークダウン
+      数式
+      図
+    整理
+      タグ
+      階層タグ
+    共有
+      インポート
+      エクスポート
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> 下書き
+    下書き --> 公開: 公開する
+    公開 --> 下書き: 非公開にする
+    公開 --> [*]: 削除
+```
