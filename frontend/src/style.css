@@ -20,10 +20,14 @@
   --color-primary-950: #062a42;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* リセットは base レイヤーに置く。レイヤー外に書くと Tailwind のユーティリティ（@layer utilities）より
+   優先され、flowbite の Modal・Button などの p-4 / px-5 といった余白がすべて 0 に潰れてしまう。 */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 html, body {
