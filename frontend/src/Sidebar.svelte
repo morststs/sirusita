@@ -15,7 +15,8 @@
     onHelp,
     onSelectTag,
     onSelectNote,
-    onRenameTag
+    onRenameTag,
+    onDeleteNotes
   } = $props();
 
   // 「タグ無し」フィルタ用のセンチネル（実在タグ文字列と衝突しない Symbol）。
@@ -62,6 +63,39 @@
         ? notes.filter(n => !n.tags || n.tags.length === 0)
         : notes.filter(n => matchesTag(n.tags, selectedTag))
   );
+
+  // マークダウン一覧の選択モード（複数選択して削除）。選択は表示中の一覧にあるものだけを対象にする。
+  let selecting = $state(false);
+  let checkedIds = $state(new Set());
+  let checkedNotes = $derived(filteredNotes.filter(n => checkedIds.has(n.id)));
+  let allChecked = $derived(filteredNotes.length > 0 && checkedNotes.length === filteredNotes.length);
+
+  function startSelecting() {
+    checkedIds = new Set();
+    selecting = true;
+  }
+
+  function stopSelecting() {
+    selecting = false;
+    checkedIds = new Set();
+  }
+
+  function toggleChecked(id) {
+    const next = new Set(checkedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    checkedIds = next;
+  }
+
+  function toggleAllChecked() {
+    checkedIds = allChecked ? new Set() : new Set(filteredNotes.map(n => n.id));
+  }
+
+  function deleteChecked() {
+    if (checkedNotes.length === 0) return;
+    onDeleteNotes?.(checkedNotes.map(n => ({ id: n.id, title: n.title })));
+  }
+
 
   // タグ名変更モーダルの状態
   let renameOpen = $state(false);
@@ -177,14 +211,35 @@
       <span class="section-count">{filteredNotes.length}</span>
     </button>
     {#if notesOpen}
-      <div class="section-body note-list">
-        {#each filteredNotes as note}
-          <button
-            class="note-item"
-            class:active={selectedNote && selectedNote.id === note.id}
-            onclick={() => onSelectNote?.(note.id)}>
-            <span class="note-title">{note.title || '無題'}</span>
+      <div class="select-bar">
+        {#if selecting}
+          <button class="bar-btn" onclick={toggleAllChecked} disabled={filteredNotes.length === 0}>
+            {allChecked ? '全て解除' : '全て選択'}
           </button>
+          <button class="bar-btn danger" onclick={deleteChecked} disabled={checkedNotes.length === 0}>
+            削除（{checkedNotes.length}件）
+          </button>
+          <button class="bar-btn done" onclick={stopSelecting}>完了</button>
+        {:else}
+          <button class="bar-btn" onclick={startSelecting} disabled={filteredNotes.length === 0}
+            title="複数のマークダウンを選んで削除">選択</button>
+        {/if}
+      </div>
+      <div class="section-body note-list">
+        {#each filteredNotes as note (note.id)}
+          {#if selecting}
+            <label class="note-item note-check" class:checked={checkedIds.has(note.id)}>
+              <input type="checkbox" checked={checkedIds.has(note.id)} onchange={() => toggleChecked(note.id)} />
+              <span class="note-title">{note.title || '無題'}</span>
+            </label>
+          {:else}
+            <button
+              class="note-item"
+              class:active={selectedNote && selectedNote.id === note.id}
+              onclick={() => onSelectNote?.(note.id)}>
+              <span class="note-title">{note.title || '無題'}</span>
+            </button>
+          {/if}
         {/each}
       </div>
     {/if}
@@ -301,6 +356,54 @@
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0;
+  }
+  .select-bar {
+    flex: none;
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .bar-btn {
+    padding: 2px 8px;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    background: #2d2d2d;
+    color: #cccccc;
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .bar-btn:hover:not(:disabled) {
+    background: #3c3c3c;
+    color: #ffffff;
+  }
+  .bar-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .bar-btn.danger {
+    border-color: #a1260d;
+    background: #5a1d1d;
+    color: #f0b0a0;
+  }
+  .bar-btn.danger:hover:not(:disabled) {
+    background: #a1260d;
+    color: #ffffff;
+  }
+  .bar-btn.done {
+    margin-left: auto;
+  }
+  .note-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .note-check.checked {
+    background: #37373d;
+    color: #ffffff;
+  }
+  .note-check .note-title {
+    min-width: 0;
   }
   .section-body {
     flex: 1 1 auto;

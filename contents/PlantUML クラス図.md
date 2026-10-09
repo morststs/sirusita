@@ -1,7 +1,7 @@
 ---
 title: "PlantUML クラス図"
 tags:
-  - "PlantUML"
+  - "Markdown/PlantUML"
   - "図表"
 created: 2026-06-21T17:37:25+09:00
 modified: 2026-06-21T17:37:25+09:00

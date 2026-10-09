@@ -26,8 +26,8 @@
   let pendingHeadingId = $state(null);
   // 見出し一覧パネルの表示状態。
   let showToc = $state(false);
-  // 削除確認ダイアログの表示状態。
-  let showDeleteConfirm = $state(false);
+  // 削除確認ダイアログの対象（[{ id, title }]。空なら閉じている）。
+  let deleteTargets = $state([]);
   // 使い方（ヘルプ）の表示状態。
   let showHelp = $state(false);
   // サンプル集から追加ダイアログの表示状態。
@@ -358,23 +358,37 @@
   // 削除ボタン: まず確認ダイアログを開く（実削除は confirmDelete）。
   function handleDelete() {
     if (!selectedNote) return;
-    showDeleteConfirm = true;
+    deleteTargets = [{ id: selectedNote.id, title: selectedNote.title }];
+  }
+
+  // サイドバーで複数選択して削除するとき。
+  function handleDeleteNotes(targets) {
+    if (targets.length > 0) deleteTargets = targets;
   }
 
   function cancelDelete() {
-    showDeleteConfirm = false;
+    deleteTargets = [];
   }
 
   async function confirmDelete() {
-    showDeleteConfirm = false;
-    if (!selectedNote) return;
+    const targets = deleteTargets;
+    deleteTargets = [];
+    if (targets.length === 0) return;
     await flushPendingSave();
-    try {
-      await DeleteNote(selectedNote.id);
-      selectedNote = null;
-      await refreshList();
-    } catch (err) {
-      showToast('マークダウンの削除に失敗しました');
+    let failed = 0;
+    for (const t of targets) {
+      try {
+        await DeleteNote(t.id);
+        if (selectedNote && selectedNote.id === t.id) selectedNote = null;
+      } catch (err) {
+        failed++;
+      }
+    }
+    await refreshList();
+    if (failed > 0) {
+      showToast('マークダウンの削除に失敗しました（' + failed + '件）');
+    } else if (targets.length > 1) {
+      showToast(targets.length + '件のマークダウンを削除しました');
     }
   }
 </script>
@@ -388,7 +402,8 @@
       onImport={handleImport}
       onAddSamples={() => showSamples = true}
       onHelp={() => showHelp = true}
-      onRenameTag={handleRenameTag} />
+      onRenameTag={handleRenameTag}
+      onDeleteNotes={handleDeleteNotes} />
   </div>
   <div class="splitter" class:active={dragging} onmousedown={startDrag} title="ドラッグで幅を調整"></div>
   <div class="main-area">
@@ -452,17 +467,28 @@
   </div>
 </div>
 
-{#if showDeleteConfirm && selectedNote}
+{#if deleteTargets.length > 0}
   <div class="modal-overlay" onclick={cancelDelete}>
     <div class="modal" onclick={(e) => e.stopPropagation()}>
       <div class="modal-title">削除の確認</div>
       <div class="modal-body">
-        「{selectedNote.title || '無題'}」を削除します。<br />
+        {#if deleteTargets.length === 1}
+          「{deleteTargets[0].title || '無題'}」を削除します。<br />
+        {:else}
+          次の {deleteTargets.length} 件のマークダウンを削除します。
+          <ul class="delete-list">
+            {#each deleteTargets as t (t.id)}
+              <li>{t.title || '無題'}</li>
+            {/each}
+          </ul>
+        {/if}
         この操作は元に戻せません。よろしいですか？
       </div>
       <div class="modal-actions">
         <button class="modal-btn cancel" onclick={cancelDelete}>キャンセル</button>
-        <button class="modal-btn danger" onclick={confirmDelete}>削除する</button>
+        <button class="modal-btn danger" onclick={confirmDelete}>
+          {deleteTargets.length > 1 ? deleteTargets.length + '件を削除する' : '削除する'}
+        </button>
       </div>
     </div>
   </div>
@@ -645,6 +671,16 @@
     color: #cccccc;
     font-size: 14px;
     line-height: 1.7;
+  }
+  .delete-list {
+    max-height: 40vh;
+    overflow-y: auto;
+    margin: 8px 0;
+    padding: 6px 10px 6px 26px;
+    border-radius: 4px;
+    background: #1e1e1e;
+    list-style: disc;
+    font-size: 13px;
   }
   .modal-actions {
     display: flex;
