@@ -148,6 +148,7 @@
   <section class="side-section tags-section" class:open={tagsOpen} class:shared={notesOpen}>
     <button class="section-header" onclick={() => (tagsOpen = !tagsOpen)} aria-expanded={tagsOpen}>
       <span class="section-caret">{tagsOpen ? '▾' : '▸'}</span>タグフィルタ
+      <span class="section-count">{tagTree.length}</span>
     </button>
     {#if tagsOpen}
       <div class="section-body tag-list">
@@ -173,6 +174,7 @@
   <section class="side-section notes-section" class:open={notesOpen}>
     <button class="section-header" onclick={() => (notesOpen = !notesOpen)} aria-expanded={notesOpen}>
       <span class="section-caret">{notesOpen ? '▾' : '▸'}</span>マークダウン一覧
+      <span class="section-count">{filteredNotes.length}</span>
     </button>
     {#if notesOpen}
       <div class="section-body note-list">
@@ -247,7 +249,9 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    border-bottom: 1px solid #333333;
+  }
+  .side-section + .side-section {
+    margin-top: 10px;
   }
   /* 両方開いているときはタグを最大 40% にし、残りを一覧に使う */
   .tags-section.open {
@@ -259,34 +263,50 @@
   .notes-section.open {
     flex: 1 1 0;
   }
+  /* セクション見出しは中の項目と区別できるよう、帯（背景色）・小さめの太字・字間・件数バッジにする */
   .section-header {
     flex: none;
     display: flex;
     align-items: center;
     gap: 6px;
     width: 100%;
-    padding: 8px 4px;
+    padding: 6px 8px;
     border: none;
-    background: none;
-    color: #cccccc;
-    font-size: 13px;
-    font-weight: 600;
+    border-left: 3px solid #0e639c;
+    border-radius: 4px;
+    background: #37373d;
+    color: #e8e8e8;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     font-family: inherit;
     text-align: left;
     cursor: pointer;
   }
   .section-header:hover {
+    background: #45454c;
     color: #ffffff;
   }
   .section-caret {
     width: 12px;
     font-size: 11px;
-    color: #888888;
+    color: #aaaaaa;
+  }
+  .section-count {
+    margin-left: auto;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: #252526;
+    color: #aaaaaa;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0;
   }
   .section-body {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    margin-top: 4px;
   }
   .new-note-btn, .import-btn, .sample-btn, .help-btn {
     width: 36px;
