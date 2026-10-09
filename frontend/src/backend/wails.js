@@ -2,7 +2,7 @@
 // Web 版は web.js で、どちらを使うかは vite.config.js の '$backend' エイリアスで
 // ビルド時に切り替える（App.svelte などは '$backend' から import するだけ）。
 import { ImportFiles } from '../../wailsjs/go/main/App';
-import { OnFileDrop, OnFileDropOff } from '../../wailsjs/runtime/runtime';
+import { OnFileDrop, OnFileDropOff, ClipboardSetText } from '../../wailsjs/runtime/runtime';
 
 export { ListNotes, GetNote, CreateNote, UpdateNote, DeleteNote, ListTags, RenameTag } from '../../wailsjs/go/main/NoteService';
 export { ExportNote, ImportNote, RenderD2, OpenURL } from '../../wailsjs/go/main/App';
@@ -21,4 +21,9 @@ export function OnImportDrop(cb) {
 
 export function OffImportDrop() {
   OnFileDropOff();
+}
+
+// クリップボードへテキストをコピーする（コードブロックのコピーボタン用）。
+export async function CopyText(text) {
+  if (!(await ClipboardSetText(text))) throw new Error('clipboard');
 }

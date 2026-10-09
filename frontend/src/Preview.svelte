@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import DOMPurify from 'dompurify';
   import { renderMarkdown, topLevelLineStarts } from './markdown.js';
-  import { OpenURL, RenderD2 } from '$backend';
+  import { OpenURL, RenderD2, CopyText } from '$backend';
 
   let {
     body = '',
@@ -90,6 +90,9 @@
         startOnLoad: false,
         theme: 'dark',
         securityLevel: 'strict',
+        // ラベルを <foreignObject> の HTML ではなく SVG の <text> で描く（DOMPurify が foreignObject を
+        // 除去して文字が消えるため）。mermaid 11 ではルートの htmlLabels が flowchart.htmlLabels より優先される。
+        htmlLabels: false,
         flowchart: { htmlLabels: false },
       });
     }
@@ -127,11 +130,48 @@
     }
   }
 
-  // html が変わるたびに行アンカーを付与し、図（Mermaid / D2）を描画し直す。
+  // 図にならないコードブロックを .code-block で包み、右上にコピーボタンを付ける。
+  // （<pre> は横スクロールするので、ボタンが一緒に流れないよう外側の枠に置く）
+  // 行アンカーはトップレベル要素の順番で付けるので、assignSourceLines より前に行う。
+  function addCopyButtons() {
+    for (const pre of container.querySelectorAll(':scope > pre')) {
+      const code = pre.querySelector(':scope > code');
+      if (!code || code.matches('.language-mermaid, .language-d2')) continue;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-btn';
+      btn.textContent = 'コピー';
+      btn.title = 'クリップボードにコピー';
+      pre.replaceWith(wrapper);
+      wrapper.append(pre, btn);
+    }
+  }
+
+  async function copyCode(btn) {
+    const code = btn.parentElement?.querySelector('pre > code');
+    if (!code) return;
+    try {
+      await CopyText(code.textContent || '');
+      btn.textContent = 'コピーしました';
+    } catch {
+      btn.textContent = 'コピーできません';
+    }
+    btn.classList.add('done');
+    clearTimeout(btn._timer);
+    btn._timer = setTimeout(() => {
+      btn.textContent = 'コピー';
+      btn.classList.remove('done');
+    }, 1500);
+  }
+
+  // html が変わるたびにコピーボタン・行アンカーを付与し、図（Mermaid / D2）を描画し直す。
   $effect(() => {
     void html;
     tick().then(() => {
       if (!container) return;
+      addCopyButtons();
       assignSourceLines();
       renderMermaid();
       renderD2();
@@ -208,6 +248,11 @@
   }
 
   function handleClick(e) {
+    const copy = e.target.closest?.('.copy-btn');
+    if (copy) {
+      copyCode(copy);
+      return;
+    }
     if (e.target.tagName === 'A' && e.target.href?.startsWith('http')) {
       e.preventDefault();
       OpenURL(e.target.href);
@@ -251,6 +296,34 @@
     padding: 12px;
     border-radius: 6px;
     overflow-x: auto;
+  }
+  .preview :global(.code-block) {
+    position: relative;
+  }
+  .preview :global(.copy-btn) {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 2px 8px;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    background: #2d2d2d;
+    color: #bbbbbb;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  /* 普段は隠し、ブロックにマウスを乗せたとき・キーボードで選んだとき・押した直後に出す */
+  .preview :global(.code-block:hover .copy-btn),
+  .preview :global(.copy-btn:focus-visible),
+  .preview :global(.copy-btn.done) {
+    opacity: 1;
+  }
+  .preview :global(.copy-btn:hover) {
+    background: #3c3c3c;
+    color: #ffffff;
   }
   .preview :global(pre code) {
     background: none;

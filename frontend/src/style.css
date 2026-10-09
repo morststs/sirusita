@@ -4,6 +4,22 @@
 @source "../node_modules/flowbite-svelte/dist";
 @source "../node_modules/flowbite-svelte-icons/dist";
 
+/* flowbite の Button などが使う primary 色。未定義だと背景が透明になり、ボタンに見えない。
+   新規ボタンと同じ青（#0e639c / hover #1177bb）を中心にする。 */
+@theme {
+  --color-primary-50: #eff7fd;
+  --color-primary-100: #d7ebf9;
+  --color-primary-200: #a9d3f2;
+  --color-primary-300: #6fb4e6;
+  --color-primary-400: #3591d3;
+  --color-primary-500: #1a78bf;
+  --color-primary-600: #1177bb;
+  --color-primary-700: #0e639c;
+  --color-primary-800: #0b4f7d;
+  --color-primary-900: #093f63;
+  --color-primary-950: #062a42;
+}
+
 * {
   margin: 0;
   padding: 0;

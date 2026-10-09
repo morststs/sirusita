@@ -112,7 +112,7 @@ sirusita/
 │   │   ├── frontMatter.js   # front matter の除去・title/tags の取り出し（node --test でテスト）
 │   │   ├── NoteToolbar.svelte # タイトル・タグ入力 + エクスポート/削除ボタン
 │   │   ├── Editor.svelte    # Monaco Editor によるマークダウン編集（スクロール位置を親へ通知）
-│   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画）
+│   │   ├── Preview.svelte   # マークダウンプレビュー（DOMPurify済み・文字サイズ可変・見出しジャンプ・Mermaid/D2図描画・コードブロックのコピーボタン（$backend の CopyText））
 │   │   ├── Toc.svelte       # 見出し一覧パネル（クリックでプレビューの該当箇所へジャンプ）
 │   │   └── tagTree.js       # 階層タグ（"親/子"）ユーティリティ: 正規化・前方一致・ツリー構築・リネーム計算（node --test でテスト）
 │   └── wailsjs/             # Wails 自動生成バインディング（編集不可・ビルド時に再生成）
