@@ -41,7 +41,7 @@ Partner Center の申請画面の各項目と、この文書の該当節の対�
 | Microsoft Store ID | `9PPT0S6GKBLW` |
 
 最初の3つは `build/msix/AppxManifest.xml` に設定済み。
-Store ページの URL は `https://apps.microsoft.com/detail/9PPT0S6GKBLW`（公開後に開ける）。
+Store ページの URL は `https://apps.microsoft.com/detail/9PPT0S6GKBLW`（v1.5.0 で公開済み）。
 
 ## 初回提出の手順
 
@@ -191,10 +191,10 @@ Notes:
 - runFullTrust is declared because this is a packaged Win32 desktop application (built with Go and Wails).
 ```
 
-## 公開後にやること
+## 公開後にやること（済み）
 
-Store で公開され、`https://apps.microsoft.com/detail/9PPT0S6GKBLW` が開けることを確認してから:
+v1.5.0 で公開済み。Store へのリンクは次の 3 か所に設定した:
 
-1. `frontend/src/links.js` の `STORE_URL` にそのURLを設定する（Web 版の案内に Store へのリンクが出る）。
-2. `.github/workflows/release.yml` の `body` に Store 版のリンクを追加する。
-3. `README.md` に Store 版の案内を追記する（「準備中」の表記を置き換える）。
+1. `frontend/src/links.js` の `STORE_URL`（Web 版のサイドバー最下部に「Windows アプリ版」の案内が出る）
+2. `.github/workflows/release.yml` の `body`
+3. `README.md`

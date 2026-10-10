@@ -1,4 +1,5 @@
 // 外部への案内リンク。
-// Microsoft Store のページ（https://apps.microsoft.com/detail/9PPT0S6GKBLW）は製品が
-// Store で公開されるまで開けないため、公開を確認してから設定する（空のあいだは非表示）。
-export const STORE_URL = '';
+// Web 版のサイドバー下部に Microsoft Store 版への案内を出す。Microsoft の公式バッジ
+// （get.microsoft.com のスクリプト）は、ページを開くたびに外部へ通信するため使わない
+// （PRIVACY.md と、Web 版で外部 CDN を使わない方針に反する）。
+export const STORE_URL = 'https://apps.microsoft.com/detail/9PPT0S6GKBLW';

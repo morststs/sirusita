@@ -70,10 +70,12 @@ jobs:
           # Store 版（https://apps.microsoft.com/detail/9PPT0S6GKBLW）のリンクは、
           # Store での公開を確認してから追加する（CLAUDE.md「Microsoft Store」参照）。
           body: |
+            **Windows: [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)**（おすすめ。自動更新されます。Store 版の更新はこのリリースより遅れることがあります）
+
             **ブラウザ: [Web 版](https://sirusita.e17.click/)**（インストール不要。メモはブラウザ内に保存）
 
-            **Windows:** `sirusita-windows-amd64.zip` を展開して `sirusita.exe` を実行してください。
-            未署名のため、Windows 11 のスマート アプリ コントロールにブロックされることがあります。
+            下の `sirusita-windows-amd64.zip` は署名の無い exe です。Windows 11 のスマート アプリ コントロールに
+            ブロックされることがあるため、通常は Store 版を使ってください。
 
             `sirusita-contents.zip` はサンプルメモ集です。アプリの「インポート」からそのまま取り込めます。
           files: |

@@ -8,8 +8,9 @@
 
 - **Web 版:** <https://sirusita.e17.click/> を開くだけで使えます（インストール不要）。
   メモはお使いのブラウザ内に保存されます。
-- **Windows 版:** [GitHub Releases](https://github.com/morststs/sirusita/releases/latest) から入手できます
-  （[ダウンロード](#ダウンロードwindows)参照）。Microsoft Store 版は準備中です。
+- **Windows 版:** [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW) からインストールできます（無料。自動更新されます）。
+  署名の無い exe も [GitHub Releases](https://github.com/morststs/sirusita/releases/latest) に置いています
+  （[ダウンロード](#ダウンロードwindows)参照）。
 
 ## 主な機能
 
@@ -112,7 +113,10 @@ Go を WebAssembly にしたものをブラウザ内で実行しています。
 
 ## ダウンロード（Windows）
 
-ビルド済みの Windows 向け実行ファイルは GitHub Releases から入手できます。
+**[Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)** からインストールしてください
+（Microsoft が署名しているため、Windows 11 のスマート アプリ コントロールにブロックされません）。
+
+署名の無い exe 単体も GitHub Releases から入手できます。
 
 - 最新リリース: https://github.com/morststs/sirusita/releases/latest
 
