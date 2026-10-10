@@ -265,10 +265,13 @@
   {#if IS_WEB}
     <div class="web-note">
       <p>メモはこのブラウザ内（IndexedDB）にだけ保存されます。サイトデータを消去すると失われるので、必要なメモはエクスポートしてください。</p>
-      {#if STORE_URL}
-        <a href={STORE_URL} target="_blank" rel="noopener noreferrer" title="Microsoft Store を開きます">Windows アプリ版（Microsoft Store） ↗</a>
-      {/if}
     </div>
+    {#if STORE_URL}
+      <a class="app-link" href={STORE_URL} target="_blank" rel="noopener noreferrer" title="Microsoft Store を開きます">
+        <span class="app-link-title">Windows アプリ版</span>
+        <span class="app-link-sub">Microsoft Store から無料で入手 ↗</span>
+      </a>
+    {/if}
   {/if}
 
   <BulkTagModal bind:open={bulkTagOpen} targets={bulkTargets} allTags={tags} onApply={applyBulkTags} />
@@ -299,10 +302,29 @@
     line-height: 1.6;
     color: #888888;
   }
-  .web-note a {
-    display: inline-block;
-    margin-top: 6px;
-    color: #4fa3e0;
+  /* Web 版だけ、サイドバー最下部に Windows アプリ版（Microsoft Store）への案内を出す */
+  .app-link {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    /* .sidebar-content の padding（12px）を打ち消して左右・下端まで広げる */
+    margin: 0 -12px -12px;
+    padding: 8px 12px;
+    border-top: 1px solid #333333;
+    color: #cccccc;
+    text-decoration: none;
+  }
+  .app-link:hover {
+    background: #2a2d2e;
+  }
+  .app-link-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4fc1ff;
+  }
+  .app-link-sub {
+    font-size: 11px;
+    color: #969696;
   }
   /* ボタン列は固定し、タグフィルタとマークダウン一覧はそれぞれの中だけでスクロールする */
   .sidebar-content {

@@ -6,8 +6,8 @@ Wails v2 + Svelte 5 で構築されたマークダウンベースのメモアプ
 メモは `~/.sirusita/notes/{UUID}.md` に YAML front matter 付きで保存される。
 
 同じ画面をブラウザで動かす **Web 版**（https://sirusita.e17.click/ ・GitHub Pages・メモはブラウザの
-IndexedDB に保存）もある（「Web 版（GitHub Pages）」参照）。**Microsoft Store 版**は準備中
-（準備中・未提出。「MSIX / Microsoft Store」参照）。
+IndexedDB に保存）もある（「Web 版（GitHub Pages）」参照）。**Microsoft Store 版**も公開中
+（v1.5.0 から。「MSIX / Microsoft Store」参照）。
 
 ## 技術スタック
 
@@ -98,7 +98,7 @@ sirusita/
 │   ├── vite.config.js       # Vite + svelte + @tailwindcss/vite + samplesPlugin（contents/ を virtual:samples に）
 │   ├── src/
 │   │   ├── main.js          # Svelte マウント
-│   │   ├── links.js         # 外部への案内リンク（STORE_URL。空のあいだ非表示）
+│   │   ├── links.js         # 外部への案内リンク（STORE_URL。Web 版サイドバー下部の「Windows アプリ版」）
 │   │   ├── backend/         # `$backend` の実装: wails.js（デスクトップ）/ web.js（Web）、webNotes.js（IndexedDB）、noteLogic.js、wasm.js + sirusita.worker.js（wasm 呼び出し）、generated/（wasm 生成物・gitignore）
 │   │   ├── style.css        # グローバルスタイル
 │   │   ├── markdown.js      # marked 設定（見出しに連番 id 付与 + KaTeX 数式 + highlight.js コードハイライト）+ 見出し抽出ユーティリティ
@@ -264,9 +264,13 @@ script トランスパイルを明示することで取り込めるようにし�
   `sirusita-msix` に置くだけ。Store への申請は自動化せず、Partner Center で手動アップロードする（半自動）。
 - **バージョン:** タグ `vX.Y.Z` の `X.Y.Z` がそのまま MSIX のバージョン（`X.Y.Z.0`）になる。
   先頭は 0 にできず、更新のたびに公開中より大きくする。
-- **公開後:** Store ページ（`https://apps.microsoft.com/detail/9PPT0S6GKBLW`）が開けるようになったら、
-  `frontend/src/links.js` の `STORE_URL` と release.yml の `body` にリンクを追加し、README にも追記する。
-  公開前は UI・README・Release 本文にこの URL を出さない。
+- **公開済み（v1.5.0 から）:** Store ページは `https://apps.microsoft.com/detail/9PPT0S6GKBLW`。
+  `frontend/src/links.js` の `STORE_URL`・release.yml の `body`・README にリンク済み。
+  Store 版の更新は Partner Center で手動申請するため、GitHub の Release より遅れることがある。
+- **アプリ版への案内:** Web 版だけ、サイドバー最下部に「Windows アプリ版 / Microsoft Store から無料で入手」
+  （Store への普通のリンク）を出す（`IS_WEB` と `STORE_URL` で切り替え）。Microsoft の公式バッジ
+  （`get.microsoft.com` の `<ms-store-badge>`）は、ページを開くたびに外部スクリプトを読み込み
+  外部 CDN を使わない方針に反するため**使わない**（shiboq と同じ方針）。
 - 提出内容の控えと手順: `docs/store-submission.md`。
 
 ## セキュリティ対策
