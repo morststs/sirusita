@@ -11,7 +11,8 @@ import (
 )
 
 // d2FenceRE は行頭の ```d2 〜 ``` を拾う（4 連バッククォートの中に書いた「書き方の例」は対象外）。
-var d2FenceRE = regexp.MustCompile("(?m)^```d2[ \t]*\r?\n([\\s\\S]*?)\r?\n```[ \t]*$")
+// Windows の checkout では改行が CRLF になるため、閉じフェンスの後ろの \r も許す。
+var d2FenceRE = regexp.MustCompile("(?m)^```d2[ \t]*\r?\n([\\s\\S]*?)\r?\n```[ \t]*\r?$")
 
 // サンプル集（contents/）とアプリ内ヘルプ（frontend/src/help.md）の D2 の図が、
 // すべてアプリで描画できることを確認する。
