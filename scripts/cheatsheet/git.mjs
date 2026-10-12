@@ -1,19 +1,8 @@
-// サンプル集の「Git コマンド 1画面版」（A4 横の SVG チートシート）を生成する。
-//
-//   node scripts/cheatsheet/git.mjs           contents/ のメモを書き直す
-//   node scripts/cheatsheet/git.mjs --check   生成結果とメモが一致し、全コマンドが
-//                                             「Git コマンド」にも載っているかを確かめる
+// サンプル集の「Git コマンド 1画面版」の内容。生成・確認は build.mjs から行う。
 //
 // 内容を変えるときは、詳しい版の「Git コマンド」（contents/Git コマンド.md）と用語・
-// プレースホルダーをそろえる（--check が 1画面版のコマンドの載り漏れを検出する）。
-import { readFileSync, writeFileSync } from 'node:fs';
-import {
-  buildSvg, commandsInMarkdown, commandsOf, danger, diagram, entry, term, text,
-  DESC_FS, INK, MARGIN as M, SUB, W, f1,
-} from './lib.mjs';
-
-const OUT = new URL('../../contents/Git コマンド 1画面版.md', import.meta.url);
-const DETAIL = new URL('../../contents/Git コマンド.md', import.meta.url);
+// プレースホルダーをそろえる（build.mjs --check が 1画面版のコマンドの載り漏れを検出する）。
+import { danger, diagram, entry, flow, term, text, titleBlock, DESC_FS, SUB, f1 } from './lib.mjs';
 
 // ---- 図 ------------------------------------------------------------------------
 
@@ -65,44 +54,19 @@ function rebaseGraph(x, y, w, h, color) {
 }
 
 // ヘッダー: 題名と、右側にデータの流れ（作業ツリー → ステージ → ローカル → リモート）
-function header() {
-  const out = [
-    text(M, M + 30, 'Git', 30, '#f05133', { weight: '800' }),
-    text(M + 62, M + 30, 'コマンド チートシート', 22, INK, { weight: '700' }),
-    text(M, M + 52, '< > の部分は実際の値に置き換える。赤は元に戻しにくい操作。詳しくは「Git コマンド」', DESC_FS + 0.6, SUB),
-  ];
-  const boxes = ['作業ツリー', 'ステージ', 'ローカル', 'リモート'];
-  const [bw, bh, gap] = [86, 26, 70];
-  const x0 = W - M - (bw * 4 + gap * 3);
-  const by = M + 14;
-  boxes.forEach((name, i) => {
-    const bx = x0 + i * (bw + gap);
-    out.push(`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="5" fill="#ffffff" stroke="#cbd2d9" stroke-width="1.2"/>`);
-    out.push(text(bx + bw / 2, by + 17, name, 11, INK, { weight: '600', anchor: 'middle' }));
-  });
-  ['add', 'commit', 'push'].forEach((label, i) => {
-    const sx = x0 + i * (bw + gap) + bw + 4;
-    const ex = sx + gap - 8;
-    out.push(`<path d="M${sx} ${by + 9} L${ex - 5} ${by + 9}" stroke="#16a34a" stroke-width="1.6"/>`);
-    out.push(`<path d="M${ex - 5} ${by + 5.5} l6 3.5 l-6 3.5 z" fill="#16a34a"/>`);
-    out.push(text((sx + ex) / 2, by + 4, label, 9.5, '#16a34a', { mono: true, anchor: 'middle' }));
-  });
-  // 戻る向き。隣り合う矢印が同じ箱で重ならないよう、段 0 は出発を中心の左 8px、到着を右 8px にずらす。
-  // restore の戻し元は既定でステージ、restore --staged はローカル（HEAD）からステージへ戻す。
-  const back = [
-    [1, 0, 0, 'restore', '#ea580c'], [2, 1, 0, 'restore --staged', '#ea580c'],
-    [3, 2, 0, 'fetch', '#0284c7'], [2, 0, 1, 'switch', '#2563eb'],
-  ];
-  for (const [a, b, level, label, col] of back) {
-    const sx = x0 + a * (bw + gap) + bw / 2 - (level === 0 ? 8 : 0);
-    const ex = x0 + b * (bw + gap) + bw / 2 + (level === 0 ? 8 : -8);
-    const yy = by + bh + 8 + level * 20;
-    out.push(`<path d="M${sx} ${by + bh} L${sx} ${yy} L${ex} ${yy} L${ex} ${by + bh + 5}" fill="none" stroke="${col}" stroke-width="1.3"/>`);
-    out.push(`<path d="M${ex - 3.5} ${by + bh + 6} l3.5 -6 l3.5 6 z" fill="${col}"/>`);
-    out.push(text((sx + ex) / 2, yy + 10, label, 9, col, { mono: true, anchor: 'middle' }));
-  }
-  return out;
-}
+// restore の戻し元は既定でステージ、restore --staged はローカル（HEAD）からステージへ戻す。
+const header = () => [
+  ...titleBlock('Git', 'コマンド チートシート',
+    '< > の部分は実際の値に置き換える。赤は元に戻しにくい操作。詳しくは「Git コマンド」', '#f05133'),
+  ...flow({
+    boxes: ['作業ツリー', 'ステージ', 'ローカル', 'リモート'],
+    forward: ['add', 'commit', 'push'],
+    back: [
+      [1, 0, 0, 'restore', '#ea580c'], [2, 1, 0, 'restore --staged', '#ea580c'],
+      [3, 2, 0, 'fetch', '#0284c7'], [2, 0, 1, 'switch', '#2563eb'],
+    ],
+  }),
+];
 
 // ---- 内容 ----------------------------------------------------------------------
 // セクション名・順番・プレースホルダーは「Git コマンド」とそろえる。
@@ -192,54 +156,13 @@ const sections = [
   ] },
 ];
 
-// ---- 出力 ----------------------------------------------------------------------
-
-const { svg, spare } = buildSvg({
+export default {
+  name: 'Git コマンド',
+  tags: ['コマンド'],
+  created: '2026-10-12T13:00:00+09:00',
   label: 'Git コマンド チートシート',
   accent: '#f05133',
   header,
   sections,
   footer: ['Sirusita サンプル集 ・ A4 横（297×210mm）', 'git help <コマンド> で詳しい説明'],
-});
-
-const note = `---
-title: "Git コマンド 1画面版"
-tags:
-  - "コマンド"
-created: 2026-10-12T13:00:00+09:00
-modified: 2026-10-12T13:00:00+09:00
-sirusita: "1"
----
-
-A4 横（297×210mm）の比率で 1 枚にまとめた Git のチートシートです。プレビューの幅に合わせて全体が拡大・縮小されます。各コマンドの詳しい説明は「Git コマンド」を見てください。
-
-${svg}
-
-## この画面の作り方
-
-全体が 1 つの SVG（\`viewBox="0 0 1123 794"\` = A4 横を 96dpi で表した大きさ）です。座標を固定して描いているので、ウィンドウの幅が変わってもレイアウトは崩れず、拡大・縮小されるだけです。
-
-- \`<svg>\` から \`</svg>\` までの間に**空行を入れない**でください。空行があると、そこでマークダウンの HTML として扱われなくなります。
-- SVG の文字は自動で折り返されません。行を増やすときは \`<text>\` の \`y\` を 1 行分ずらして追加します。
-- 図や文字の位置は \`x\` / \`y\`（左上が 0、右が x、下が y）で決まります。
-- このメモは Sirusita のリポジトリの \`scripts/cheatsheet/git.mjs\` で生成しています。
-`;
-
-if (process.argv.includes('--check')) {
-  let ok = true;
-  if (readFileSync(OUT, 'utf8') !== note) {
-    console.error('「Git コマンド 1画面版」が生成結果と違う: node scripts/cheatsheet/git.mjs で書き直す');
-    ok = false;
-  }
-  const known = commandsInMarkdown(readFileSync(DETAIL, 'utf8'));
-  const missing = commandsOf(sections).filter((c) => !known.has(c));
-  if (missing.length) {
-    console.error('「Git コマンド」に載っていないコマンド:\n  ' + missing.join('\n  '));
-    ok = false;
-  }
-  if (!ok) process.exit(1);
-  console.log(`ok（最後の列の残り ${Math.round(spare)}px）`);
-} else {
-  writeFileSync(OUT, note);
-  console.log(`書き出した: contents/Git コマンド 1画面版.md（最後の列の残り ${Math.round(spare)}px）`);
-}
+};

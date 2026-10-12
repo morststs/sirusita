@@ -81,7 +81,8 @@ sirusita/
 ├── scripts/
 │   ├── build-wasm.sh        # Go を wasm にビルドし wasm_exec.js と生成先へ出力
 │   ├── wasm-smoke.mjs       # 生成した wasm の動作確認（Node）
-│   ├── cheatsheet/          # A4 横の SVG チートシートの生成（lib.mjs: 共通の組版 / git.mjs: Git 1画面版）
+│   ├── cheatsheet/          # A4 横の SVG チートシート「〇〇 1画面版」の生成（build.mjs: 生成・確認 /
+│   │                        #   lib.mjs: 共通の組版 / git.mjs・docker.mjs・bash.mjs・regex.mjs: 各シートの内容）
 │   └── build-msix.ps1       # 未署名 MSIX を作る（Windows 専用・ASCII のみ）
 ├── build/msix/AppxManifest.xml # MSIX マニフェスト（製品 ID 設定済み）
 ├── Dockerfile               # ビルド用イメージ（Docker でビルド）
@@ -124,8 +125,8 @@ sirusita/
 │                            #   アプリにも同梱し「サンプル集から追加」で選んで追加できる
 │                            #   （import.meta.glob は「C#」の # で壊れるため samplesPlugin で読む）
 │                            #   （```d2 ブロックは contents_test.go が全て描画できるか検証。ヘルプは含めない）
-│                            #   「Git コマンド 1画面版」は scripts/cheatsheet/git.mjs の生成物（直接編集しない。
-│                            #   内容は詳しい版「Git コマンド」と用語・プレースホルダーをそろえる）
+│                            #   「〇〇 1画面版」は scripts/cheatsheet/ の生成物（直接編集しない。
+│                            #   載せるコマンドは詳しい版「〇〇」に書かれている形にそろえる）
 ├── build/bin/               # ビルド出力先（sirusita / sirusita.exe）
 ├── LICENSE                  # MIT
 └── THIRD_PARTY_LICENSES.md
@@ -208,9 +209,9 @@ docker run --rm -v "$PWD":/app -w /app wails-dev sh -c 'sh scripts/build-wasm.sh
 # IndexedDB 用の純粋ロジックのテスト（noteLogic.js）
 docker run --rm -v "$PWD":/app -w /app wails-dev node --test frontend/src/backend/noteLogic.test.js
 
-# Git チートシート（contents/Git コマンド 1画面版.md）の生成 / 一致と載り漏れの確認
-docker run --rm -v "$PWD":/app -w /app wails-dev node scripts/cheatsheet/git.mjs
-docker run --rm -v "$PWD":/app -w /app wails-dev node scripts/cheatsheet/git.mjs --check
+# チートシート（contents/〇〇 1画面版.md）の生成 / 一致と載り漏れの確認
+docker run --rm -v "$PWD":/app -w /app wails-dev node scripts/cheatsheet/build.mjs
+docker run --rm -v "$PWD":/app -w /app wails-dev node scripts/cheatsheet/build.mjs --check
 
 # Wails バインディング再生成（Go API 変更時）
 docker run --rm -v "$PWD":/app -w /app wails-dev wails generate module
