@@ -1,0 +1,41 @@
+name: 不具合の報告 / Bug report
+description: 思ったとおりに動かないときはこちら / Something does not work as expected
+labels: [bug]
+body:
+  - type: dropdown
+    id: edition
+    attributes:
+      label: 使っている版 / Edition
+      options:
+        - Windows（Microsoft Store）
+        - Windows（GitHub Releases の exe）
+        - Web 版（https://sirusita.e17.click/）
+        - その他 / Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: バージョン / Version
+      description: ヘルプ（サイドバー上部の「?」）の下に表示されます / Shown at the bottom of the help (the "?" button)
+      placeholder: v1.6.0
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順 / Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した動作と実際の動作 / Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境 / Environment
+      description: OS、Web 版ならブラウザとそのバージョン / OS, and the browser for the web version

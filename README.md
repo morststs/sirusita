@@ -1,8 +1,12 @@
 # Sirusita
 
-マークダウンで書ける、シンプルなデスクトップメモアプリです。
-メモは YAML front matter 付きのマークダウンファイルとしてローカルに保存され、
-タグでの分類・プレビュー表示に対応しています。
+**開発者のための、ローカルに保存するマークダウンメモ・チートシート管理アプリ**（無料・オープンソース）
+
+[English](./README.en.md) ・ [Web 版で試す](https://sirusita.e17.click/) ・ [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
+
+- **メモはただのマークダウンファイル** — デスクトップ版は `~/.sirusita/notes/` に `.md` として保存。クラウドにもアカウントにも依存しません。
+- **チートシートをすぐ使える** — Go・Rust・Python などの文法、Docker・Git・bash・sed のコマンド、正規表現、Mermaid / D2 の図などのサンプル集を同梱。選んでメモに追加できます。
+- **階層タグで技術メモを整理** — `プログラミング/Go`・`コマンド/docker` のように `/` で区切ると、親タグで配下をまとめて絞り込めます。
 
 ## 使い方
 
@@ -150,6 +154,11 @@ docker run --rm -v "$PWD":/app -w /app/frontend -p 4173:4173 wails-dev npm run p
 ```
 
 main への push で GitHub Actions が Web 版を GitHub Pages へ公開します。
+
+## フィードバック
+
+不具合の報告や機能の要望は [GitHub Issues](https://github.com/morststs/sirusita/issues) へどうぞ（日本語・英語どちらでも）。
+リリースごとの変更点は [`CHANGELOG.md`](./CHANGELOG.md) にまとめています。
 
 ## プライバシー
 
