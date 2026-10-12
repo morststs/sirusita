@@ -3,7 +3,7 @@ title: "Docker コマンド"
 tags:
   - "コマンド"
 created: 2026-06-28T10:00:00+09:00
-modified: 2026-08-02T10:20:00+09:00
+modified: 2026-10-12T15:00:00+09:00
 sirusita: "1"
 ---
 
@@ -20,9 +20,11 @@ sirusita: "1"
 * **`docker build -t <名前>:<タグ> .`**：カレントの Dockerfile からイメージをビルド
 * **`docker build --no-cache -t <名前> .`**：キャッシュを使わずに再ビルド
 * **`docker tag <元> <新名>`**：イメージに別名（タグ）を付与
+* **`docker login`**：レジストリにログイン（push の前に必要）
+* **`docker push <名前>:<タグ>`**：イメージをレジストリへ送信
 * **`docker rmi <イメージ>`**：ローカルイメージを削除
 * **`docker history <イメージ>`**：イメージのレイヤー構成（各命令）を表示
-* **`docker save / docker load`**：イメージを tar に保存・復元（オフライン移送）
+* **`docker save -o <ファイル>.tar <イメージ>`** / **`docker load -i <ファイル>.tar`**：イメージを tar に保存・復元（オフライン移送）
 
 ```bash
 # Dockerfile からビルドして Docker Hub へ push
@@ -43,6 +45,7 @@ docker push username/myapp:1.0
 * **`docker run -v <ホスト>:<コンテナ> <イメージ>`**：ディレクトリをマウント
 * **`docker run -e KEY=値 <イメージ>`**：環境変数を渡す
 * **`docker run --rm <イメージ>`**：終了時にコンテナを自動削除
+* **`docker run --restart unless-stopped <イメージ>`**：手動で止めるまで、落ちても自動で再起動
 
 ```bash
 # nginx を 8080 で公開し、ホストの html をマウントして起動
@@ -60,7 +63,8 @@ docker run -d --name web -p 8080:80 \
 * **`docker stop <コンテナ>`**：コンテナを正常停止（SIGTERM）
 * **`docker start <コンテナ>`**：停止中のコンテナを再開
 * **`docker restart <コンテナ>`**：コンテナを再起動
-* **`docker rm <コンテナ>`**：停止中のコンテナを削除（`-f` で稼働中も強制削除）
+* **`docker rm <コンテナ>`**：停止中のコンテナを削除
+* **`docker rm -f <コンテナ>`**：稼働中のコンテナも強制的に削除
 * **`docker rename <旧> <新>`**：コンテナ名を変更
 * **`docker stats`**：コンテナごとの CPU・メモリ使用量をリアルタイム表示
 
@@ -162,8 +166,8 @@ volumes:
 
 ## 8. クリーンアップ（prune）
 
-* **`docker system prune`**：停止コンテナ・未使用ネットワーク・ダングリングイメージを一括削除
-* **`docker system prune -a`**：未使用イメージも含めて徹底的に削除
+* **`docker system prune`**：停止コンテナ・未使用ネットワーク・ダングリングイメージ・未使用のビルドキャッシュを一括削除
+* **`docker system prune -a`**：使っていないイメージもすべて含めて削除（ボリュームは `--volumes` を付けたときだけ）
 * **`docker image prune`**：未使用（ダングリング）イメージを削除
 * **`docker container prune`**：停止中のコンテナをまとめて削除
 * **`docker volume prune`**：未使用ボリュームを削除
@@ -179,7 +183,7 @@ docker system prune -a --volumes
 
 ## 9. ビルドキャッシュの管理（BuildKit）
 
-BuildKit のビルドキャッシュは `docker system prune` では消えないため、専用コマンドで管理する。全削除ではなく「直近のキャッシュを一定量だけ残す」運用が便利。
+`docker system prune` でも未使用のビルドキャッシュは消えるが、まとめて全部消える。ビルドキャッシュだけを、容量を指定して「直近のものを一定量残す」ように減らすには専用コマンドを使う。
 
 * **`docker builder prune`**：未使用のビルドキャッシュを削除（確認プロンプトあり）
 * **`docker builder prune -f`**：確認なしで削除

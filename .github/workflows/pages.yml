@@ -53,6 +53,10 @@ jobs:
       - name: Unit tests (JS)
         run: node --test frontend/src/tagTree.test.js frontend/src/frontMatter.test.js frontend/src/backend/noteLogic.test.js
 
+      # 生成物の「〇〇 1画面版」が生成スクリプトと一致し、詳しい版と食い違っていないこと
+      - name: Check generated cheat sheets
+        run: node scripts/cheatsheet/build.mjs --check
+
       - name: Build web
         working-directory: frontend
         run: npm run build:web
