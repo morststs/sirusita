@@ -5,8 +5,13 @@ Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
 
 ## 未リリース
 
+## v1.7.0（2026-10-13）
+
+- **サンプル集に「1画面版」チートシートを追加**: Git・Docker・bash・正規表現を A4 横の 1 枚（SVG）にまとめた版。生成スクリプトは `scripts/cheatsheet/`
+- サンプルの「Git コマンド」を拡充（用語の図・初期設定・switch・worktree など）。Docker・bash・正規表現のサンプルの誤りと表の崩れを修正
 - Web 版のサイドバー最下部に、Microsoft Store 版（Windows アプリ版）への案内を追加
-- Windows（改行が CRLF）で D2 ブロックの検出テストが失敗する問題を修正
+- 英語版 README・Issue テンプレート・この変更履歴を追加
+- 修正: Windows（改行が CRLF）で D2 ブロックの検出テストが失敗する
 
 ## v1.6.0（2026-10-10）
 
