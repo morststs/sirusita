@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Web 版で試す / Try the web version
+    url: https://sirusita.e17.click/
+    about: インストールせずにブラウザで動作を確認できます / Check the behavior in your browser without installing

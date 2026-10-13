@@ -77,6 +77,8 @@ sirusita/
 ├── wasm_main.go             # Web 版 wasm のエントリ（`js && wasm`）。JS へ関数を公開
 ├── note_service.go          # メモ CRUD ロジック
 ├── PRIVACY.md               # プライバシーポリシー（Web 版と同梱して公開）
+├── README.en.md             # 英語版 README（README.md の冒頭と内容をそろえる）
+├── CHANGELOG.md             # 変更履歴（リリースのたびに「未リリース」を版に付け替える）
 ├── docs/store-submission.md # Microsoft Store 提出内容の控え
 ├── scripts/
 │   ├── build-wasm.sh        # Go を wasm にビルドし wasm_exec.js と生成先へ出力

@@ -100,10 +100,11 @@ Store ページの URL は `https://apps.microsoft.com/detail/9PPT0S6GKBLW`（v1
 ### 説明
 
 ```
-Sirusita は、マークダウンで書けるシンプルなメモアプリです。
+Sirusita は、技術メモやコマンド集をマークダウンで書きためる、開発者向けのシンプルなメモアプリです。
 
 メモはマークダウンで書き、プレビューで確認できます。タグで分類でき、「プログラミング/Go」のように「/」で区切ると階層タグとしてまとめて絞り込めます。
 
+・Go・Rust・Python などの文法、Docker・Git・bash のコマンド、正規表現、図の書き方などのチートシート集を同梱。選んでメモに追加できます
 ・数式（KaTeX）、図（Mermaid / D2）、コードのシンタックスハイライトをプレビューに表示
 ・タグと階層タグでの整理、タグ名の一括変更
 ・マークダウンや ZIP のインポート、マークダウンのエクスポート（ドラッグ＆ドロップにも対応）
@@ -115,13 +116,14 @@ Sirusita は、マークダウンで書けるシンプルなメモアプリで�
 ### 短い説明（推奨 270 文字以下）
 
 ```
-マークダウンで書けるシンプルなメモアプリ。タグ・階層タグでの整理、数式や図（Mermaid / D2）のプレビューに対応。オフラインで動作し、メモは PC 内にだけ保存されます。
+技術メモやチートシートをマークダウンで書きためる開発者向けメモアプリ。言語の文法・コマンド集のサンプルを同梱。階層タグで整理でき、数式や図（Mermaid / D2）もプレビュー。オフラインで動作し、メモは PC 内にだけ保存されます。
 ```
 
 ### 製品の機能（10 個以内）
 
 ```
 マークダウンの編集とプレビュー
+言語の文法・コマンド・正規表現などのチートシート集を同梱
 数式（KaTeX）と図（Mermaid / D2）の表示
 コードのシンタックスハイライト
 タグと階層タグでの整理、タグ名の一括変更
@@ -134,7 +136,55 @@ Sirusita は、マークダウンで書けるシンプルなメモアプリで�
 ### キーワード（最大 7 個）
 
 ```
-マークダウン メモ / メモ帳 / Markdown / タグ / 階層タグ / 数式 / 図表
+マークダウン メモ / Markdown / チートシート / 開発者 / 技術メモ / 階層タグ / 図表
+```
+
+### 英語の登録情報（追加する場合）
+
+Partner Center の「Store 登録情報」で言語に英語（en-us）を追加し、次を入力する。
+**UI とサンプル集が日本語のみであることは必ず書く**（期待と違うという低評価を避けるため）。
+スクリーンショットは日本語版と同じものでよい。
+
+説明:
+
+```
+Sirusita is a free, open-source Markdown note app for developers who want to keep technical notes, code snippets, and cheat sheets as local files.
+
+Note: the user interface and the bundled sample notes are in Japanese.
+
+- Markdown editing and preview, with math (KaTeX), diagrams (Mermaid / D2), and syntax highlighting
+- Hierarchical tags such as "Programming/Go": selecting a parent tag also shows the notes under it. Rename or merge tags in one step
+- Bundled cheat sheets (programming language syntax, Docker / Git / bash commands, regular expressions, diagrams) that you can add as notes
+- Import Markdown files or ZIP archives (drag and drop supported) and export notes as Markdown
+- Works offline. Notes are stored only on your PC, as Markdown files under your user folder (.sirusita), and are never sent anywhere
+
+Source code (MIT License): https://github.com/morststs/sirusita
+Web version (runs in your browser, notes are kept in the browser): https://sirusita.e17.click/
+```
+
+短い説明:
+
+```
+Local-first Markdown notes and cheat sheets for developers. Hierarchical tags, math and diagram preview, bundled cheat sheets. Works offline; notes stay on your PC. UI is in Japanese.
+```
+
+製品の機能:
+
+```
+Markdown editing and preview
+Bundled cheat sheets for languages, commands, and regular expressions
+Math (KaTeX) and diagrams (Mermaid / D2)
+Syntax highlighting for code
+Hierarchical tags, bulk tag rename and merge
+Import Markdown / ZIP (drag and drop)
+Export notes as Markdown
+Works fully offline (notes stay on your PC)
+```
+
+キーワード:
+
+```
+markdown / notes / cheat sheet / developer / tags / offline / diagram
 ```
 
 ### その他
