@@ -28,6 +28,8 @@
       renderWhitespace: 'none',
       padding: { top: 12, bottom: 12 },
       tabSize: 2,
+      // 全角の「：」「（」などを紛らわしい文字として枠で囲む強調は、日本語では邪魔なので切る
+      unicodeHighlight: { ambiguousCharacters: false, invisibleCharacters: false },
     });
 
     editor.onDidChangeModelContent(() => {
