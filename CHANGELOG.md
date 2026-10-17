@@ -5,6 +5,8 @@ Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
 
 ## 未リリース
 
+- エディタで全角の「：」「（」などが枠で囲まれて表示される（紛らわしい文字の強調）のをやめた
+
 ## v1.7.0（2026-10-13）
 
 - **サンプル集に「1画面版」チートシートを追加**: Git・Docker・bash・正規表現を A4 横の 1 枚（SVG）にまとめた版。生成スクリプトは `scripts/cheatsheet/`
