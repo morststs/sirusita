@@ -258,6 +258,9 @@ script トランスパイルを明示することで取り込めるようにし�
 - **公開:** `.github/workflows/pages.yml` が main への push で `npm run build:web` を実行し、
   `frontend/dist-web` に LICENSE / THIRD_PARTY_LICENSES.md / PRIVACY.md を足して Pages へデプロイする。
   Pages の Source は **GitHub Actions**。
+  デプロイの確認は `gh run list --workflow pages.yml` / `gh run watch <run-id> --exit-status`、
+  公開後は `curl -I https://sirusita.e17.click/` で `last-modified` がデプロイ時刻か見る。
+  Actions の `ubuntu-latest` は 2026-10-19 から Ubuntu 26 へ移行する（以降に CI が壊れたらまず疑う）。
 - **独自ドメイン:** `sirusita.e17.click`。Route53 のホストゾーン `e17.click` に CNAME `sirusita` → `morststs.github.io`。
   カスタムドメインの設定は GitHub Pages 側（リポジトリの Pages 設定）が正。
 - **外部 CDN を使わない:** Web 版はプライバシー上、閲覧時に第三者へ通信しない方針。
@@ -301,4 +304,19 @@ script トランスパイルを明示することで取り込めるようにし�
 - ライセンス: **MIT**（`LICENSE`、著作権者 morststs）
 - **`certs/`（秘密鍵・PFX・署名スクリプト）は公開しない。** `.gitignore` 済み。鍵をコミットしないこと
 - サードパーティライセンスは `THIRD_PARTY_LICENSES.md` を参照
+
+## Jev（開発補助・アプリ本体とは無関係）
+
+- 開発時に Claude Code の jev スキル（`https://jevtypesafeai.com/api/v1/decide`。TypeSafe AI 公式ではない
+  独立サイトの従量課金プロキシ）を使うことがある。アプリのコードからは使わない。
+- **`.jev/config.json` はローカル設定で `.gitignore` 済み**（`compaction.enabled: true`）。ただしこの環境に
+  このファイルを読むプログラムは見つかっておらず、実際に効いているかは未確認。
+- キーは環境変数 `JEV_API_KEY`（`jv_live_…`）のみ。リポジトリ（公開・MIT）に書かない・表示しない。
+  Claude Code は起動時の環境を引き継ぐので、別ターミナルでの `export` は届かない（設定後は再起動）。
+- 使いどころのルールは `~/.claude/rules/jev.md`（リポジトリ外）。大きな材料を Claude が読まずに振り分けるときだけ使い、
+  秘密情報・個人情報・`~/.sirusita/notes/` のメモは送らない。
+- 開発用サンドボックスは通信先を許可制にしていることがあり、`jevtypesafeai.com` や `sirusita.e17.click` が
+  名前解決できないときはまず許可設定を確認する。
+- 動作確認: `curl` で 3 種類（choice / score / noul）の質問を 1 回送り HTTP 200 と `answers` を見る。
+  401 はキー未設定、402 は残高不足。
 ```
