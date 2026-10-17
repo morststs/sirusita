@@ -12,3 +12,6 @@ input/
 tmp/
 frontend/dist-web
 frontend/src/backend/generated/
+
+# Jev のローカル設定（追跡しない）
+.jev/config.json
