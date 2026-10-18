@@ -12,7 +12,7 @@
 
 ## Get it
 
-- **Web:** Open <https://sirusita.e17.click/> — nothing to install. Notes are saved in your browser (IndexedDB) and never sent to a server. Clearing the browser's site data deletes them, so export notes you want to keep.
+- **Web:** Open <https://sirusita.e17.click/> — nothing to install. Notes are saved in your browser (IndexedDB) and never sent to a server. Clearing the browser's site data deletes them, so export notes you want to keep (exports do not include tags or created/modified dates).
 - **Windows 11:** Install from the [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW) (free, updates automatically).
   An unsigned `sirusita.exe` is also available from [GitHub Releases](https://github.com/morststs/sirusita/releases/latest).
 
@@ -21,7 +21,7 @@
 - **Markdown editing and preview** — Monaco-based editor, rendered preview with math (KaTeX), diagrams (Mermaid / D2) and syntax highlighting. Switch between tabs or show both side by side with synchronized scrolling.
 - **Hierarchical tags** — Tag tree in the sidebar with note counts. Rename a tag (and everything under it) in one step, or merge it into an existing tag. Change the tags of several notes at once.
 - **Sample collection** — Add bundled cheat sheets from the sidebar. The same notes are attached to each release as `sirusita-contents.zip`.
-- **Import / export** — Import Markdown files or ZIP archives (drag and drop works too). Export the open note as Markdown.
+- **Import / export** — Import Markdown files or ZIP archives (drag and drop works too). Export the open note as Markdown (title and body only; tags and dates are not included).
 - **Offline and private** — The app does not talk to any server. See [`PRIVACY.md`](./PRIVACY.md).
 
 ## Note format
