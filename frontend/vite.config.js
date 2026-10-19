@@ -20,6 +20,8 @@ function appVersion() {
 // 同梱サンプル集（リポジトリ直下の contents/*.md）を `virtual:samples` として取り込む。
 // import.meta.glob はファイル名の「#」（C#基本文法.md）を URL のフラグメントと解釈して
 // 解決できないため、fs で直接読む。出力は [{ name, raw }]（name は拡張子なしのファイル名）。
+// 開発サーバーでの変更監視も addWatchFile は使わない（Vite はモジュールの作り直し時に監視ファイルを
+// import として解決し直し、「#」入りのパスで「Failed to resolve import」になる）。
 function samplesPlugin() {
   const id = 'virtual:samples'
   const resolved = '\0' + id
@@ -31,18 +33,32 @@ function samplesPlugin() {
       if (source !== resolved) return null
       const items = readdirSync(dir)
         .filter((f) => f.endsWith('.md'))
-        .map((f) => {
-          this.addWatchFile(join(dir, f))
-          return {name: f.slice(0, -3), raw: readFileSync(join(dir, f), 'utf8')}
-        })
+        .map((f) => ({name: f.slice(0, -3), raw: readFileSync(join(dir, f), 'utf8')}))
       return 'export default ' + JSON.stringify(items)
+    },
+    // contents/*.md が変わったら virtual:samples を作り直してページを再読み込みする。
+    configureServer(server) {
+      server.watcher.add(dir)
+      server.watcher.on('all', (_event, file) => {
+        if (!file.startsWith(dir) || !file.endsWith('.md')) return
+        const mod = server.moduleGraph.getModuleById(resolved)
+        if (mod) server.moduleGraph.invalidateModule(mod)
+        server.ws.send({type: 'full-reload'})
+      })
     },
   }
 }
 
 // `--mode web` で Web 版（GitHub Pages）をビルドする。それ以外はデスクトップ版（Wails）。
 // App.svelte などは '$backend' から import し、ここでどちらの実装を使うか切り替える。
+// 想定外のモード（例: 打ち間違いで "web" の後ろに見えない文字が付いた）だと、黙ってデスクトップ版の
+// $backend（Wails 前提）になり、ブラウザで開くと保存がすべて失敗する。起動時に止めて気付けるようにする。
+const KNOWN_MODES = ['development', 'production', 'web']
+
 export default defineConfig(({mode}) => {
+  if (!KNOWN_MODES.includes(mode)) {
+    throw new Error(`未知の --mode ${JSON.stringify(mode)}。使えるのは ${KNOWN_MODES.join(' / ')} のみ（Web 版は npm run dev:web）`)
+  }
   const web = mode === 'web'
   return {
     plugins: [samplesPlugin(), tailwindcss(), svelte()],
