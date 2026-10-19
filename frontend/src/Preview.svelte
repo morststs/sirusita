@@ -94,6 +94,8 @@
         // 除去して文字が消えるため）。mermaid 11 ではルートの htmlLabels が flowchart.htmlLabels より優先される。
         htmlLabels: false,
         flowchart: { htmlLabels: false },
+        // 構文エラー時に「Syntax error」の図を document.body へ残さない（エラーは markError で該当ブロックに出す）
+        suppressErrorRendering: true,
       });
     }
     return mermaidMod;

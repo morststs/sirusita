@@ -5,6 +5,10 @@ Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
 
 ## 未リリース
 
+- 修正: Mermaid の図に構文エラーがあると、画面下部に「Syntax error in text」の図が残って表示されるのを直した
+- 修正: サンプル「PlantUML シーケンス」「PlantUML クラス図」「Mermaid」で、太字の閉じ `**` がコードの中に入り表示が崩れていたのを直した
+- ヘルプと README に、エクスポートにはタグと作成・更新日時が含まれないことを明記
+
 ## v1.7.1（2026-10-17）
 
 - 修正: エディタで全角の「：」「（」などが枠で囲まれて表示される（紛らわしい文字の強調）のをやめた
