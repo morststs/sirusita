@@ -5,7 +5,7 @@
 [English](./README.en.md) ・ [Web 版で試す](https://sirusita.e17.click/) ・ [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
 
 - **メモはただのマークダウンファイル** — デスクトップ版は `~/.sirusita/notes/` に `.md` として保存。クラウドにもアカウントにも依存しません。
-- **チートシートをすぐ使える** — Go・Rust・Python などの文法、Docker・Git・bash・sed のコマンド、正規表現、Mermaid / D2 の図などのサンプル集を同梱。選んでメモに追加できます。
+- **チートシートをすぐ使える** — Go・Rust・Python などの文法、Docker・Git・bash・sed のコマンド、正規表現、Mermaid / D2 / PlantUML の図などのサンプル集を同梱。選んでメモに追加できます。
 - **階層タグで技術メモを整理** — `プログラミング/Go`・`コマンド/docker` のように `/` で区切ると、親タグで配下をまとめて絞り込めます。
 
 ## 使い方
@@ -29,7 +29,7 @@
     front matter → 先頭の H1 見出し → ファイル名 の優先順で決定。**ZIP** を選ぶと
     中の `.md` をまとめて一括取り込み。**sirusita 形式**（`sirusita:` マーカー付き）の
     ファイルはタイトル・タグに加え作成/更新日時もそのまま引き継ぎます。
-- **サンプルコンテンツ集** — プログラミング言語・各種図（Mermaid / D2 は実際に描画される例付き。PlantUML は記法のみ）・
+- **サンプルコンテンツ集** — プログラミング言語・各種図（Mermaid / D2 / PlantUML。実際に描画される例付き）・
   コマンド（bash / docker / sed / git）・正規表現などのチートシートを `contents/` に同梱。
   アプリにも同梱しており、サイドバーの「サンプル集から追加」ボタンで必要なものを選んで
   メモとして追加できます（Web 版も同様）。Release では exe とは別の `sirusita-contents.zip`

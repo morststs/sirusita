@@ -73,7 +73,7 @@ sirusita: "1"
 
 * **`note left` / `note right`**：直前のアクションの左右に注釈を配置（複数行可、`end note` で終了）
 * **`floating note left:テキスト`**：フローと線で結ばない浮遊ノートを配置
-* **`#色:アクション;`**：アクションの背景色を指定（例 `#palegreen:`）
+* **`:アクション; <<#色>>`**：アクションの背景色を指定（例 `<<#darkgreen>>`。旧来の `#色:アクション;` は非推奨で、色が無視され警告が出る）
 * **`:アクション;<<装飾>>`**：ステレオタイプ的な装飾を付与
 * **`title タイトル文`**：図全体のタイトルを表示
 
@@ -81,12 +81,12 @@ sirusita: "1"
 @startuml
 title 注文処理フロー
 
-|#lightblue|顧客|
+|顧客|
 start
 :商品をカートに入れる;
 :注文を確定する;
 
-|#lightyellow|システム|
+|システム|
 :在庫を確認する;
 if (在庫あり?) then (yes)
   partition 決済処理 {
@@ -100,10 +100,10 @@ if (在庫あり?) then (yes)
   fork again
     :確認メールを送信する;
   end fork
-  #palegreen:出荷を指示する;
+  :出荷を指示する; <<#darkgreen>>
   note right: 倉庫システムへ連携
 else (no)
-  #pink:在庫切れを通知する;
+  :在庫切れを通知する; <<#darkred>>
   stop
 endif
 

@@ -5,6 +5,10 @@ Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
 
 ## 未リリース
 
+- **PlantUML の図を表示**: ` ```plantuml `（` ```puml `）のブロックをプレビューで図にする。PlantUML 公式の TeaVM 版（`@plantuml/core`）を同梱し、Java もサーバーも不要（完全オフライン。図があるときだけ読み込む）。`!theme`・`!include`・絵文字・アイコンは未対応
+- サンプル「PlantUML シーケンス」「PlantUML クラス図」に描画される完全サンプルを追加。「PlantUML アクティビティ図」の非推奨の書き方と、暗い画面で文字が読めない配色を修正。シーケンスの自己呼び出しの説明の誤りを修正
+- 開発: 開発サーバーでサンプル集の再読み込み時に「C#基本文法.md」を解決できずエラーになるのを修正。`--mode` に想定外の値を渡したら起動を止める
+
 ## v1.7.2（2026-10-19）
 
 - 修正: Mermaid の図に構文エラーがあると、画面下部に「Syntax error in text」の図が残って表示されるのを直した

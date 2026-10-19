@@ -7,7 +7,7 @@
 > The user interface and the bundled sample notes are currently in **Japanese only**.
 
 - **Your notes are plain Markdown files** — The desktop app stores each note as a `.md` file under `~/.sirusita/notes/`. No cloud service, no account.
-- **Cheat sheets out of the box** — A bundled sample collection covers the syntax of Go, Rust, Python, TypeScript and more, commands for Docker, Git, bash and sed, regular expressions, and Mermaid / D2 diagrams. Pick the ones you want and add them as notes.
+- **Cheat sheets out of the box** — A bundled sample collection covers the syntax of Go, Rust, Python, TypeScript and more, commands for Docker, Git, bash and sed, regular expressions, and Mermaid / D2 / PlantUML diagrams. Pick the ones you want and add them as notes.
 - **Hierarchical tags** — Separate tag segments with `/` (e.g. `Programming/Go`, `Commands/docker`). Selecting a parent tag also shows the notes tagged with its children.
 
 ## Get it
@@ -18,7 +18,7 @@
 
 ## Features
 
-- **Markdown editing and preview** — Monaco-based editor, rendered preview with math (KaTeX), diagrams (Mermaid / D2) and syntax highlighting. Switch between tabs or show both side by side with synchronized scrolling.
+- **Markdown editing and preview** — Monaco-based editor, rendered preview with math (KaTeX), diagrams (Mermaid / D2 / PlantUML) and syntax highlighting. Switch between tabs or show both side by side with synchronized scrolling.
 - **Hierarchical tags** — Tag tree in the sidebar with note counts. Rename a tag (and everything under it) in one step, or merge it into an existing tag. Change the tags of several notes at once.
 - **Sample collection** — Add bundled cheat sheets from the sidebar. The same notes are attached to each release as `sirusita-contents.zip`.
 - **Import / export** — Import Markdown files or ZIP archives (drag and drop works too). Export the open note as Markdown (title and body only; tags and dates are not included).
