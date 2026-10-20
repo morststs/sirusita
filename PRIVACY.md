@@ -1,6 +1,6 @@
 # Privacy Policy / プライバシーポリシー
 
-Last updated / 最終更新日: 2026-10-07
+Last updated / 最終更新日: 2026-10-19
 
 ## English
 
@@ -34,7 +34,7 @@ On Windows, Sirusita displays its user interface with the Microsoft Edge WebView
 Sirusita is also available as a web page at <https://sirusita.e17.click/>.
 
 - Your notes are stored only in your browser (IndexedDB and localStorage) on your device. They are never sent to any server.
-- D2 diagram rendering and import parsing run entirely inside your browser using WebAssembly.
+- D2 diagram rendering and import parsing run entirely inside your browser using WebAssembly, and PlantUML diagrams are rendered inside your browser by a bundled engine. These programs are loaded only from the Sirusita site itself.
 - You can delete the data from within the app or by clearing the site data in your browser.
 - The page is hosted on GitHub Pages. When your browser downloads the page, GitHub receives the usual request information (such as your IP address) as part of serving it. The developer has no access to it, and it is governed by the [GitHub Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). The domain name is resolved by Amazon Route 53 (DNS only; no page content passes through it). The page itself loads nothing from any other domain, except resources such as images that you yourself reference in your notes, which are fetched from wherever you point them.
 
@@ -80,7 +80,7 @@ Windowsでは、画面表示にWindowsのコンポーネントであるMicrosoft
 Sirusitaは <https://sirusita.e17.click/> でWebページとしても利用できます。
 
 - メモは、お使いの端末のブラウザ内（IndexedDBおよびlocalStorage）にのみ保存されます。サーバーへ送信されることはありません。
-- D2図の描画とインポートの解析は、WebAssemblyを使ってすべてブラウザ内で行います。
+- D2図の描画とインポートの解析は WebAssembly を使って、PlantUML の図の描画は同梱のエンジンを使って、すべてブラウザ内で行います。これらのプログラムは Sirusita のサイトからのみ読み込みます。
 - アプリ内の削除操作、またはブラウザのサイトデータの消去により、いつでも消去できます。
 - ページはGitHub Pagesで配信しています。ブラウザがページを読み込む際、配信の過程でGitHubが通常のリクエスト情報（IPアドレスなど）を受け取ります。開発者はこれにアクセスできず、その取り扱いは[GitHub のプライバシーに関する声明](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement)に従います。ドメイン名の解決（DNS）にはAmazon Route 53を使っていますが、ページの内容はそこを経由しません。ページ自体はGitHub以外からは何も読み込みません（利用者自身がメモ内で参照した画像などは、指定された場所から取得されます）。
 

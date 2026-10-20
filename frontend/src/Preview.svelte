@@ -118,6 +118,25 @@
     }
   }
 
+  // PlantUML（TeaVM 版のエンジン。数 MB あるので図が存在するときだけ動的に読み込む）。
+  let plantumlMod = null;
+
+  // ```plantuml / ```puml コードブロックを SVG 図に置き換える。
+  async function renderPlantUML() {
+    const blocks = container.querySelectorAll('pre > code.language-plantuml, pre > code.language-puml');
+    if (blocks.length === 0) return;
+    plantumlMod ??= await import('./plantuml.js');
+    for (const code of blocks) {
+      const pre = code.parentElement;
+      try {
+        const svg = await plantumlMod.renderPlantUML(code.textContent || '');
+        injectSvg(pre, svg);
+      } catch (err) {
+        markError(pre, err);
+      }
+    }
+  }
+
   // ```d2 コードブロックを Go バックエンド（完全オフライン）で SVG 化して置き換える。
   async function renderD2() {
     const blocks = container.querySelectorAll('pre > code.language-d2');
@@ -138,7 +157,7 @@
   function addCopyButtons() {
     for (const pre of container.querySelectorAll(':scope > pre')) {
       const code = pre.querySelector(':scope > code');
-      if (!code || code.matches('.language-mermaid, .language-d2')) continue;
+      if (!code || code.matches('.language-mermaid, .language-d2, .language-plantuml, .language-puml')) continue;
       const wrapper = document.createElement('div');
       wrapper.className = 'code-block';
       const btn = document.createElement('button');
@@ -168,7 +187,7 @@
     }, 1500);
   }
 
-  // html が変わるたびにコピーボタン・行アンカーを付与し、図（Mermaid / D2）を描画し直す。
+  // html が変わるたびにコピーボタン・行アンカーを付与し、図（Mermaid / D2 / PlantUML）を描画し直す。
   $effect(() => {
     void html;
     tick().then(() => {
@@ -177,6 +196,7 @@
       assignSourceLines();
       renderMermaid();
       renderD2();
+      renderPlantUML();
     });
   });
 

@@ -105,7 +105,7 @@ Sirusita は、技術メモやコマンド集をマークダウンで書きた�
 メモはマークダウンで書き、プレビューで確認できます。タグで分類でき、「プログラミング/Go」のように「/」で区切ると階層タグとしてまとめて絞り込めます。
 
 ・Go・Rust・Python などの文法、Docker・Git・bash のコマンド、正規表現、図の書き方などのチートシート集を同梱。選んでメモに追加できます
-・数式（KaTeX）、図（Mermaid / D2）、コードのシンタックスハイライトをプレビューに表示
+・数式（KaTeX）、図（Mermaid / D2 / PlantUML）、コードのシンタックスハイライトをプレビューに表示
 ・タグと階層タグでの整理、タグ名の一括変更
 ・マークダウンや ZIP のインポート、マークダウンのエクスポート（ドラッグ＆ドロップにも対応）
 ・プレビューの文字サイズ変更と、見出し一覧からのジャンプ
@@ -116,7 +116,7 @@ Sirusita は、技術メモやコマンド集をマークダウンで書きた�
 ### 短い説明（推奨 270 文字以下）
 
 ```
-技術メモやチートシートをマークダウンで書きためる開発者向けメモアプリ。言語の文法・コマンド集のサンプルを同梱。階層タグで整理でき、数式や図（Mermaid / D2）もプレビュー。オフラインで動作し、メモは PC 内にだけ保存されます。
+技術メモやチートシートをマークダウンで書きためる開発者向けメモアプリ。言語の文法・コマンド集のサンプルを同梱。階層タグで整理でき、数式や図（Mermaid / D2 / PlantUML）もプレビュー。オフラインで動作し、メモは PC 内にだけ保存されます。
 ```
 
 ### 製品の機能（10 個以内）
@@ -124,7 +124,7 @@ Sirusita は、技術メモやコマンド集をマークダウンで書きた�
 ```
 マークダウンの編集とプレビュー
 言語の文法・コマンド・正規表現などのチートシート集を同梱
-数式（KaTeX）と図（Mermaid / D2）の表示
+数式（KaTeX）と図（Mermaid / D2 / PlantUML）の表示
 コードのシンタックスハイライト
 タグと階層タグでの整理、タグ名の一括変更
 マークダウン / ZIP のインポート（ドラッグ＆ドロップ対応）
@@ -152,7 +152,7 @@ Sirusita is a free, open-source Markdown note app for developers who want to kee
 
 Note: the user interface and the bundled sample notes are in Japanese.
 
-- Markdown editing and preview, with math (KaTeX), diagrams (Mermaid / D2), and syntax highlighting
+- Markdown editing and preview, with math (KaTeX), diagrams (Mermaid / D2 / PlantUML), and syntax highlighting
 - Hierarchical tags such as "Programming/Go": selecting a parent tag also shows the notes under it. Rename or merge tags in one step
 - Bundled cheat sheets (programming language syntax, Docker / Git / bash commands, regular expressions, diagrams) that you can add as notes
 - Import Markdown files or ZIP archives (drag and drop supported) and export notes as Markdown
@@ -173,7 +173,7 @@ Local-first Markdown notes and cheat sheets for developers. Hierarchical tags, m
 ```
 Markdown editing and preview
 Bundled cheat sheets for languages, commands, and regular expressions
-Math (KaTeX) and diagrams (Mermaid / D2)
+Math (KaTeX) and diagrams (Mermaid / D2 / PlantUML)
 Syntax highlighting for code
 Hierarchical tags, bulk tag rename and merge
 Import Markdown / ZIP (drag and drop)
@@ -208,7 +208,7 @@ markdown / notes / cheat sheet / developer / tags / offline / diagram
 ### スクリーンショット
 
 **1 枚以上必須**（最大 10 枚）。横 1366×縦 768 以上の PNG。アプリの初期ウィンドウより大きい場合は最大化してから撮る。
-`contents/` のサンプルメモ（数式・Mermaid / D2 の図を含むもの）を開いたプレビューや、
+`contents/` のサンプルメモ（数式・Mermaid / D2 / PlantUML の図を含むもの）を開いたプレビューや、
 階層タグのツリーが見える画面が見栄えする。
 
 ## 申請オプション

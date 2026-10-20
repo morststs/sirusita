@@ -61,3 +61,56 @@ sirusita: "1"
 * **`package <名> { ... }`**：関連するクラスを枠で囲んでグループ化
 * **`note left of <クラス名> : メモ`**：指定クラスの左側に注釈を配置
 * **`note "メモ" as N`**：独立したノートを作成し、`クラス名 .. N` でクラスと接続
+
+---
+
+## 7. 完全サンプル
+
+```plantuml
+@startuml
+title 注文管理のクラス図
+hide empty members
+
+package 注文管理 {
+  class 注文 {
+    - 注文番号 : String
+    - 状態 : 注文状態
+    + 合計金額() : int
+    {static} + 新規作成() : 注文
+  }
+  class 注文明細 {
+    ~ 数量 : int
+  }
+  enum 注文状態 {
+    受付
+    出荷済
+    キャンセル
+  }
+  abstract class 支払い {
+    # 金額 : int
+    {abstract} + 実行() : bool
+  }
+  class クレジットカード払い {
+    - カード番号 : String
+    + 実行() : bool
+  }
+}
+
+interface 通知先 {
+  + 通知(内容 : String)
+}
+class 顧客 {
+  - 名前 : String
+}
+class 商品
+
+支払い <|-- クレジットカード払い
+通知先 <|.. 顧客
+顧客 "1" -- "*" 注文 : 発注する >
+注文 *-- "1..*" 注文明細
+注文明細 o-- 商品
+注文 --> 支払い
+注文 ..> 注文状態
+note right of 注文 : 合計金額は\n明細から計算
+@enduml
+```

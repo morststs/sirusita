@@ -1,7 +1,8 @@
 # Third-Party Licenses
 
 本プロジェクト（Sirusita）は以下のサードパーティ製ソフトウェアを利用しています。
-大半は寛容（permissive）なオープンソースライセンスで、D2 のみ MPL-2.0（弱コピーレフト）です。
+大半は寛容（permissive）なオープンソースライセンスで、D2 は MPL-2.0（弱コピーレフト）、
+PlantUML に同梱される Graphviz は EPL-1.0（弱コピーレフト）です。
 
 > 注: 下表は**直接依存**を対象としています。推移的依存の完全な一覧は `go.mod` / `go.sum`
 > および `frontend/package.json` / `frontend/package-lock.json` を参照してください。
@@ -43,6 +44,7 @@
 | highlight.js | BSD-3-Clause |
 | monaco-editor | MIT |
 | dompurify | MPL-2.0 OR Apache-2.0 |
+| @plantuml/core（1.2026.9） | MIT（下記「PlantUML」参照） |
 
 ## フォント（Google Fonts CDN 経由で読み込み）
 
@@ -92,3 +94,29 @@ D2（`oss.terrastruct.com/d2`）は Mozilla Public License 2.0（弱コピーレ
 - D2 の著作権・ライセンス表示を保持し、D2 の改変が生じた場合は当該ファイルを MPL-2.0 で提供します
   （本プロジェクトは D2 を改変していません）。
 - D2 のソースは https://github.com/terrastruct/d2 で公開されています。
+
+## 注意（PlantUML: @plantuml/core とその同梱物）
+
+PlantUML の図は `@plantuml/core`（PlantUML 公式の TeaVM 版。1.2026.9 に固定）で描画します。
+1.2026.6 以降は MIT です（それより前の版は GPL-3.0-or-later のため、版を下げないこと）。
+アプリに同梱するのは `plantuml.js`（エンジン）と `viz-global.js`（Graphviz のレイアウト）だけで、
+`themes.js`（GPL-3.0+ のテーマを含む）と `emoji.js`（CC BY 4.0 の Twemoji）は同梱しません。
+
+| 含まれるもの | ライセンス |
+|---|---|
+| PlantUML（© Arnaud Roques） | MIT |
+| TeaVM ランタイム（Java → JavaScript 変換の実行部分） | Apache-2.0 |
+| ZXing（PlantUML 内の QR コード処理） | Apache-2.0 |
+| PlantUML の LICENSE に記載のクレジット（OpenIconic・Archi・ASCIIMathML・Brotli・CafeUndZopfli など） | PlantUML の MIT 配布に含まれる各ライセンス |
+| Viz.js 3.24.0（© Michael Daines） | MIT |
+| Expat（Viz.js に同梱） | MIT |
+| Graphviz（Viz.js に WebAssembly として同梱） | EPL-1.0 |
+
+- PlantUML の LICENSE 全文: `frontend/node_modules/@plantuml/core/LICENSE`（https://github.com/plantuml/plantuml）
+- **Graphviz（EPL-1.0）:** Graphviz は Eclipse Public License 1.0 のもとで、Viz.js に同梱された
+  オブジェクトコード（WebAssembly）として無改変で再配布しています。ソースコードは
+  https://graphviz.org/ （https://gitlab.com/graphviz/graphviz）から入手できます。
+  EPL の条項は Graphviz のみに適用され、本プロジェクトのコードは MIT のまま配布できます。
+  Graphviz はコントリビューターによる保証なしで提供され、本プロジェクトの配布に関する保証・責任は
+  Graphviz のコントリビューターではなく本プロジェクトが負います（EPL-1.0 §3）。
+- PlantUML が生成した図（SVG）は、その図のソースを書いた利用者のものです（PlantUML の LICENSE より）。
