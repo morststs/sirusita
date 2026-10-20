@@ -46,24 +46,28 @@ PlantUML に同梱される Graphviz は EPL-1.0（弱コピーレフト）で�
 | dompurify | MPL-2.0 OR Apache-2.0 |
 | @plantuml/core（1.2026.9） | MIT（下記「PlantUML」参照） |
 
-## フォント（Google Fonts CDN 経由で読み込み）
+## フォント
 
-| フォント | ライセンス |
-|---|---|
-| Noto Sans JP | SIL Open Font License 1.1 |
-| Source Code Pro | SIL Open Font License 1.1 |
-
-これらのフォントは `frontend/index.html` から Google Fonts CDN 経由で読み込まれており、
-フォントファイル自体は本リポジトリに同梱・再配布していません。
+画面の文字は OS のシステムフォント（Segoe UI・Yu Gothic UI・Meiryo・Hiragino Sans など。
+等幅は Consolas・SFMono-Regular・Menlo など）を使い、フォントの読み込みはしません。
+Web 版も閲覧時に第三者へ通信しない方針のため、Google Fonts などの外部 CDN は使いません
+（以前は Google Fonts から Noto Sans JP / Source Code Pro を読み込んでいましたが、廃止しました）。
 
 ### 同梱フォント（アプリ内に再配布）
 
 | フォント | ライセンス |
 |---|---|
 | KaTeX フォント（`KaTeX_*` woff2/woff/ttf） | MIT（KaTeX に同梱、KaTeX 本体と同一の MIT ライセンス） |
+| Codicons（`codicon.ttf`。エディタのアイコン用） | MIT（monaco-editor に同梱。© Microsoft Corporation） |
 
 KaTeX のフォントは数式表示のためアプリのバンドルに同梱しています。KaTeX 本体（MIT）の
 配布物に含まれ、同じ MIT ライセンスで再配布できます（著作権表示の保持が必要）。
+
+Codicons は Monaco Editor（エディタ）が使うアイコンフォントで、monaco-editor の配布物に含まれ、
+monaco-editor の MIT ライセンスで再配布しています。上流の
+[vscode-codicons](https://github.com/microsoft/vscode-codicons) ではアイコン（フォント）が
+CC BY 4.0 で公開されているため、念のため帰属を表示します:
+「Codicons © Microsoft Corporation, licensed under CC BY 4.0（https://creativecommons.org/licenses/by/4.0/）」。
 
 ## ライセンス全文の入手
 
