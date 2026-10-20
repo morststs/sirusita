@@ -5,6 +5,10 @@ Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
 
 ## 未リリース
 
+## v1.8.1（2026-10-20）
+
+- 同梱の `THIRD_PARTY_LICENSES.md` のフォントの節を現状に合わせた（Google Fonts の記載を削除し、同梱の KaTeX フォントと Codicons を記載）
+
 ## v1.8.0（2026-10-20）
 
 - **PlantUML の図を表示**: ` ```plantuml `（` ```puml `）のブロックをプレビューで図にする。PlantUML 公式の TeaVM 版（`@plantuml/core`）を同梱し、Java もサーバーも不要（完全オフライン。図があるときだけ読み込む）。`!theme`・`!include`・絵文字・アイコンは未対応
