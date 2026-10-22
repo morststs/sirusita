@@ -3,7 +3,7 @@
 各版のダウンロードは [GitHub Releases](https://github.com/morststs/sirusita/releases)、
 Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW) から入手できます。
 
-## 未リリース
+## v1.8.2（2026-10-22）
 
 - 修正: PlantUML のクラス図で、丸の中の文字（C / I / A / E）が中心から上にずれて表示されるのを直した
 
