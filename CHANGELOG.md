@@ -5,6 +5,8 @@ Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW)
 
 ## 未リリース
 
+- 修正: PlantUML のクラス図で、丸の中の文字（C / I / A / E）が中心から上にずれて表示されるのを直した
+
 ## v1.8.1（2026-10-20）
 
 - 同梱の `THIRD_PARTY_LICENSES.md` のフォントの節を現状に合わせた（Google Fonts の記載を削除し、同梱の KaTeX フォントと Codicons を記載）

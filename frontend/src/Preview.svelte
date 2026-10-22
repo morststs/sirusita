@@ -54,7 +54,9 @@
     wrapper.className = 'diagram';
     // スクロール同期用の行アンカーを差し替え後の要素へ引き継ぐ。
     if (pre.dataset.sourceLine != null) wrapper.dataset.sourceLine = pre.dataset.sourceLine;
-    wrapper.innerHTML = DOMPurify.sanitize(svg);
+    // dominant-baseline は既定の許可リストにない。消えると PlantUML のクラス図の丸囲み文字（C / I / A / E）が
+    // 円の中心より上にずれるため、表示用の属性として許可する。
+    wrapper.innerHTML = DOMPurify.sanitize(svg, { ADD_ATTR: ['dominant-baseline'] });
     if (fitNatural) {
       const root = wrapper.querySelector('svg');
       const vb = root?.getAttribute('viewBox')?.split(/[\s,]+/);
