@@ -96,7 +96,8 @@ sirusita/
 ├── .github/workflows/
 │   ├── release.yml          # v* タグ push で Windows exe をビルドし Release へ添付
 │   ├── msix.yml             # v* タグ push で MSIX をビルドし Artifact へ（Store 申請は手動）
-│   └── pages.yml            # main push で Web 版をビルドし GitHub Pages へ公開
+│   ├── pages.yml            # main push で Web 版をビルドし GitHub Pages へ公開
+│   └── claude.yml           # Issue に「claude」ラベル / @claude コメントで Claude Code が対応し PR を作る
 ├── frontend/
 │   ├── svelte.config.js     # vitePreprocess({ script: true })（後述の「ビルド注意点」参照）
 │   ├── vite.config.js       # Vite + svelte + @tailwindcss/vite + samplesPlugin（contents/ を virtual:samples に）

@@ -1,0 +1,70 @@
+name: Claude
+
+# Issue に「claude」ラベルを付けると Claude Code が対応し、ブランチにコミットして PR を作る。
+# Issue / PR のコメントで @claude と呼んだときも動く（PR 上なら同じブランチへ追加でコミットする）。
+# 公開リポジトリなので Issue の作成では起動しない。ラベルを付けられるのは書き込み権限のある人だけで、
+# @claude のコメントもアクション側で書き込み権限のある人に限られる。
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+# 書き込み（ブランチ・コメント・PR）は Claude の GitHub App のトークンで行う。
+# id-token はそのトークンを OIDC で受け取るのに要る。
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  id-token: write
+  actions: read
+
+# 同じ Issue / PR では 1 本ずつ動かす（実行中のものは中断しない）
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    # 関係ないラベルやコメントではランナーを起動しない
+    if: |
+      (github.event_name == 'issues' && github.event.label.name == 'claude') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      # Claude が確認に使う Go / Node を用意する（pages.yml と同じ版）。
+      # go test は Wails（GTK/WebKit の cgo）と frontend/dist を要求するためここでは使わない。
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.23'
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          label_trigger: claude
+          claude_args: |
+            --max-turns 60
+            --allowedTools "Bash(gofmt:*),Bash(go vet:*),Bash(go build:*),Bash(GOOS=js GOARCH=wasm go vet:*),Bash(node --test:*),Bash(node scripts/cheatsheet/build.mjs:*),Bash(npm run build:web),Bash(gh pr create:*)"
+            --append-system-prompt "このジョブは GitHub Actions の ubuntu-latest 上で動く。CLAUDE.md の Docker の手順は使わず、コマンドは直接実行する（docker は使えない）。Go / Node / frontend/node_modules は用意済み。go test は Wails の都合で動かないので、Go を変えたら gofmt と go vet、GOOS=js GOARCH=wasm go vet . で確認する。フロントを変えたら node --test の該当テストと npm run build:web で確認する。コミットメッセージは feat: / fix: / chore: で始める。Issue に対応して変更をコミットしたら、最後に gh pr create で main 向けの PR を作り、本文に Closes #<Issue 番号> と確認した内容を書く。すでに PR のブランチ上で動いているときは PR を作らない。"
