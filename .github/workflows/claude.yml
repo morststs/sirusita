@@ -38,8 +38,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        # checkout@v7 は includeIf でトークンを保存し、claude-code-action はそれを外せない。
+        # 残ると push が読み取り専用の GITHUB_TOKEN（github-actions[bot]）で行われ 403 になる。
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       # Claude が確認に使う Go / Node を用意する（pages.yml と同じ版）。
       # go test は Wails（GTK/WebKit の cgo）と frontend/dist を要求するためここでは使わない。
