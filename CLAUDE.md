@@ -97,6 +97,7 @@ sirusita/
 │   ├── release.yml          # v* タグ push で Windows exe をビルドし Release へ添付
 │   ├── msix.yml             # v* タグ push で MSIX をビルドし Artifact へ（Store 申請は手動）
 │   ├── pages.yml            # main push で Web 版をビルドし GitHub Pages へ公開
+│   ├── test.yml             # PR と main push で go test（D2 の図の描画を含む）・JS テスト・チートシート確認
 │   ├── claude.yml           # Issue に「claude」ラベル / @claude コメントで Claude Code が対応し PR を作る
 │   └── claude-code-review.yml # PR の作成・更新で Claude Code が自動レビュー（claude[bot] の PR も対象）
 ├── frontend/

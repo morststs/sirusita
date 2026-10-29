@@ -1,0 +1,60 @@
+name: Test
+
+# PR（Claude が作ったものも含む）と main への push でテストする。
+# go test は contents/ とヘルプの D2 の図が描画できるか（TestContentsD2BlocksRender）も確かめる。
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同じ PR / ブランチで新しいコミットが来たら、古い実行は止める
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.23'
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # main パッケージは Wails（GTK/WebKit の cgo）を含むため、go test のコンパイルにも要る。
+      # Ubuntu 24.04 以降は webkit2gtk-4.0 が無いので 4.1 を入れ、-tags webkit2_41 でビルドする。
+      - name: Install GTK / WebKit
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      # main.go の //go:embed all:frontend/dist はフォルダーが空だと失敗する。
+      # テストに画面は要らないので、フロントのビルドの代わりにダミーを置く。
+      - name: Stub frontend/dist
+        run: mkdir -p frontend/dist && touch frontend/dist/.keep
+
+      - name: Go tests
+        run: go test -tags webkit2_41 ./...
+
+      - name: Vet wasm build
+        run: GOOS=js GOARCH=wasm go vet .
+
+      - name: Unit tests (JS)
+        run: node --test frontend/src/tagTree.test.js frontend/src/frontMatter.test.js frontend/src/backend/noteLogic.test.js
+
+      # 生成物の「〇〇 1画面版」が生成スクリプトと一致し、詳しい版と食い違っていないこと
+      - name: Check generated cheat sheets
+        run: node scripts/cheatsheet/build.mjs --check

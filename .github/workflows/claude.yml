@@ -45,7 +45,7 @@ jobs:
           persist-credentials: false
 
       # Claude が確認に使う Go / Node を用意する（pages.yml と同じ版）。
-      # go test は Wails（GTK/WebKit の cgo）と frontend/dist を要求するためここでは使わない。
+      # go test の準備（GTK/WebKit・frontend/dist のダミー）は test.yml と同じ。
       - name: Setup Go
         uses: actions/setup-go@v7
         with:
@@ -62,6 +62,15 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Install GTK / WebKit
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      # main.go の //go:embed all:frontend/dist は空だと失敗するのでダミーを置く（.gitignore 済み）
+      - name: Stub frontend/dist
+        run: mkdir -p frontend/dist && touch frontend/dist/.keep
+
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
@@ -69,5 +78,5 @@ jobs:
           label_trigger: claude
           claude_args: |
             --max-turns 60
-            --allowedTools "Bash(gofmt:*),Bash(go vet:*),Bash(go build:*),Bash(GOOS=js GOARCH=wasm go vet:*),Bash(node --test:*),Bash(node scripts/cheatsheet/build.mjs:*),Bash(npm --prefix frontend run build:web),Bash(gh pr create:*)"
-            --append-system-prompt "このジョブは GitHub Actions の ubuntu-latest 上で動く。CLAUDE.md の Docker の手順は使わず、コマンドは直接実行する（docker は使えない）。Go / Node / frontend/node_modules は用意済み。go test は Wails の都合で動かないので、Go を変えたら gofmt と go vet、GOOS=js GOARCH=wasm go vet . で確認する。コマンドはリポジトリのルートで、cd を付けずに書いたとおりの形で実行する（許可されたコマンドと一字一句一致しないと実行できない）。フロントを変えたら node --test frontend/src/tagTree.test.js frontend/src/frontMatter.test.js frontend/src/backend/noteLogic.test.js と npm --prefix frontend run build:web で確認する。PR の本文には実行した確認コマンドと結果を書き、実行できなかったものはそう書く。コミットメッセージは feat: / fix: / chore: で始める。Issue に対応して変更をコミットしたら、最後に gh pr create で main 向けの PR を作り、本文に Closes #<Issue 番号> と確認した内容を書く。すでに PR のブランチ上で動いているときは PR を作らない。"
+            --allowedTools "Bash(gofmt:*),Bash(go vet:*),Bash(go build:*),Bash(go test -tags webkit2_41:*),Bash(GOOS=js GOARCH=wasm go vet:*),Bash(node --test:*),Bash(node scripts/cheatsheet/build.mjs:*),Bash(npm --prefix frontend run build:web),Bash(gh pr create:*)"
+            --append-system-prompt "このジョブは GitHub Actions の ubuntu-latest 上で動く。CLAUDE.md の Docker の手順は使わず、コマンドは直接実行する（docker は使えない）。Go / Node / frontend/node_modules は用意済み。Go や contents/*.md・frontend/src/help.md（D2 の図）を変えたら go test -tags webkit2_41 ./... を実行する（GTK/WebKit と frontend/dist のダミーは用意済み。-tags webkit2_41 は必須）。Go を変えたら gofmt -l . と GOOS=js GOARCH=wasm go vet . も実行する。コマンドはリポジトリのルートで、cd を付けずに書いたとおりの形で実行する（許可されたコマンドと一字一句一致しないと実行できない）。フロントを変えたら node --test frontend/src/tagTree.test.js frontend/src/frontMatter.test.js frontend/src/backend/noteLogic.test.js と npm --prefix frontend run build:web で確認する。PR の本文には実行した確認コマンドと結果を書き、実行できなかったものはそう書く。コミットメッセージは feat: / fix: / chore: で始める。Issue に対応して変更をコミットしたら、最後に gh pr create で main 向けの PR を作り、本文に Closes #<Issue 番号> と確認した内容を書く。すでに PR のブランチ上で動いているときは PR を作らない。"
