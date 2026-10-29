@@ -302,6 +302,7 @@ script トランスパイルを明示することで取り込めるようにし�
 - Svelte 5（runes）: props は `$props()`、状態は `$state`/`$derived`/`$effect`、親への通知はコールバック props（`onXxx`）、イベントは `onclick` 等のネイティブ属性
 - コミットメッセージ: `feat:` / `fix:` / `chore:` プレフィックス
 - 言語: コード内コメントは日本語 OK、識別子は英語
+- 応答の言語: Claude の回答・Issue / PR のコメント・PR の本文・レビューは**日本語**で書く（GitHub Actions の Claude も含む）
 
 ## 公開・ライセンス
 
