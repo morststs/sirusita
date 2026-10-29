@@ -6,12 +6,20 @@ import { parseFrontMatter } from './frontMatter.js';
 // タグの無いサンプルのカテゴリー名（一覧の最後に置く）
 export const OTHER_CATEGORY = 'その他';
 
+// サンプルのタグの最初の階層（追加したメモのタグは全て「サンプル/…」になる）
+export const SAMPLE_TAG_ROOT = 'サンプル';
+
+const withRoot = (tag) =>
+  tag === SAMPLE_TAG_ROOT || tag.startsWith(SAMPLE_TAG_ROOT + '/') ? tag : `${SAMPLE_TAG_ROOT}/${tag}`;
+
 // [{ key, title, tags, body, category }]（カテゴリー順 → タイトル順）。
-// カテゴリーは最初のタグ（例: "Markdown/PlantUML"）。
+// カテゴリーは最初のタグから「サンプル/」を除いたもの（例: "Markdown/PlantUML"）。
 export const SAMPLES = files
   .map(({ name, raw }) => {
     const s = parseFrontMatter(raw, name);
-    return { key: name, ...s, category: s.tags[0] || OTHER_CATEGORY };
+    const tags = s.tags.length ? s.tags.map(withRoot) : [SAMPLE_TAG_ROOT];
+    const first = s.tags[0] ? tags[0].slice(SAMPLE_TAG_ROOT.length + 1) : '';
+    return { key: name, ...s, tags, category: first || OTHER_CATEGORY };
   })
   .sort((a, b) => {
     if (a.category !== b.category) {
