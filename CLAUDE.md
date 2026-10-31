@@ -56,6 +56,20 @@ docker run --rm -v "$PWD":/app -w /app/frontend wails-dev npm install <package>
 
 > SELinux が有効なホスト（Fedora / RHEL 等）ではマウントを `-v "$PWD":/app:Z` にする。
 
+### Docker Sandboxes（sbx）で開発するとき
+
+Claude Code を sbx のサンドボックス（例: `claude-sbx01`）で動かすことがある。中に Go / Node / GTK・WebKit が
+入っていて、`go test -tags webkit2_41 ./...` や `npm run …` を Docker を介さず直接実行できる。
+
+- **サンドボックスの中のサーバーは、既定ではホスト（Windows）から見えない**（ネットワークが分離されている）。
+  見る方法は 2 つ。
+  - VS Code から Remote-SSH でサンドボックスにつないでいれば、VS Code のポート転送で `http://localhost:<port>/` が開ける。
+  - ホストで `sbx ports <名前> --publish <ホスト側>:<中のポート>` を実行する（やめるときは `--unpublish`）。
+- サーバーは `--host 0.0.0.0` で listen させる（`127.0.0.1` だけだと sbx の公開では届かない）。
+- `sbx ports` が `409 … port not available` になるのは、ホスト側のポートが使用中のとき（VS Code のポート転送が
+  押さえていることが多い）。ホスト側だけ別の番号にする（例: `--publish 15173:5173`）。
+- `sbx` はホストで実行するコマンドで、サンドボックスの中からは実行できない。
+
 ### イメージ内容 (wails-dev / .devcontainer)
 
 - Go 1.23, Node.js 22 LTS（NodeSource）, Wails CLI v2.12.0
@@ -289,6 +303,43 @@ script トランスパイルを明示することで取り込めるようにし�
   （`get.microsoft.com` の `<ms-store-badge>`）は、ページを開くたびに外部スクリプトを読み込み
   外部 CDN を使わない方針に反するため**使わない**（shiboq と同じ方針）。
 - 提出内容の控えと手順: `docs/store-submission.md`。
+
+## GitHub Actions の Claude（Issue → PR）
+
+- **`claude.yml`:** Issue に **`claude` ラベル**を付けると、Claude Code が対応してブランチにコミットし、`gh pr create` で
+  PR を作る（本文に `Closes #番号`）。Issue / PR のコメントで `@claude` と呼んでも動き、PR 上なら同じブランチへ追加でコミットする。
+  公開リポジトリなので Issue の作成では起動しない（ラベルを付けられるのは書き込み権限のある人だけ）。
+  やり直しはラベルを外して付け直す。認証はシークレット `CLAUDE_CODE_OAUTH_TOKEN`（Claude の GitHub App 経由）。
+- **`claude-code-review.yml`:** PR の作成・更新で自動レビュー。`claude.yml` が作る PR は作成者が `claude[bot]` で、
+  bot は既定で起動できないため `allowed_bots: 'claude[bot]'` で許可している（`'*'` にはしない）。
+- **`test.yml`:** PR と main への push で `go test`・wasm 向け vet・JS テスト・チートシート確認を行う。
+- **`/install-github-app` を再実行するとき:** ワークフローのファイルを追加する PR を作るが、**マージしない**。
+  `claude.yml` が公式の雛形（ラベルで起動しない版）に置き換わる（一度これで動かなくなった）。
+- **checkout は `persist-credentials: false` が必須:** `actions/checkout@v7` はトークンを `includeIf` で保存し、
+  claude-code-action はそれを外せない。残ると push が読み取り専用の GITHUB_TOKEN（github-actions[bot]）で行われ 403 になる。
+- **許可するコマンド（`--allowedTools`）は書いた形と完全に一致しないと実行できない。** `cd frontend && npm run build:web`
+  は弾かれるので `npm --prefix frontend run build:web` を許可し、`--append-system-prompt` でも同じ形を指示している。
+  コマンドを足すときは許可と指示の両方を直す。
+- **CI で go test を動かすには:** main パッケージは Wails（GTK/WebKit の cgo）を含むので、apt で `libgtk-3-dev`
+  `libwebkit2gtk-4.1-dev` を入れ、`-tags webkit2_41` を付ける（Ubuntu 24.04 以降に webkit2gtk-4.0 は無い）。
+  `//go:embed all:frontend/dist` は空だと失敗するので `frontend/dist/.keep` のダミーを置く。
+- **D2 の予約語は大文字小文字を区別しない:** 図形に `Shape` などと名付けると予約語 `shape` と読まれ描画できない
+  （`TestContentsD2BlocksRender` が検出する）。
+
+## PR の動作確認
+
+画面の確認は Web 版の開発サーバーで行う（保存先の `$backend` 以外はデスクトップ版と同じ画面）。
+
+```bash
+gh pr checkout <番号>
+cd frontend && npm run dev:web -- --host 0.0.0.0 --port 5173 --strictPort
+# → http://localhost:5173/（sbx の場合は上の「Docker Sandboxes（sbx）で開発するとき」）
+```
+
+- ファイル保存・OS のダイアログを使うインポート / エクスポート・ドラッグ&ドロップ・Wails 側の Go は確認できない。
+  これらの変更は Windows の exe で確かめる。
+- Web 版のメモはブラウザの IndexedDB にオリジンごとに保存されるので、`localhost:5173` のメモは公開中の Web 版とは混ざらない。
+- 確認が終わったら `git switch main` で戻す。
 
 ## セキュリティ対策
 
