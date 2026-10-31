@@ -3,6 +3,12 @@
 各版のダウンロードは [GitHub Releases](https://github.com/morststs/sirusita/releases)、
 Windows 版は [Microsoft Store](https://apps.microsoft.com/detail/9PPT0S6GKBLW) から入手できます。
 
+## v1.8.3（2026-10-31）
+
+- サンプル集から追加したメモのタグに、最初の階層として「サンプル/」を付けるようにした（例: `Markdown` → `サンプル/Markdown`）。サイドバーで「サンプル」を選ぶと、追加したサンプルをまとめて表示できる
+- サンプル「D2 応用」を追加（構成図・シーケンス図・ER 図・クラス図・グリッド）
+- 開発: PR ごとにテスト（go test・JS テスト・チートシートの確認）を実行する GitHub Actions を追加。Issue に `claude` ラベルを付けると Claude Code が対応して PR を作るワークフローを追加
+
 ## v1.8.2（2026-10-22）
 
 - 修正: PlantUML のクラス図で、丸の中の文字（C / I / A / E）が中心から上にずれて表示されるのを直した
